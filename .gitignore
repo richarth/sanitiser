@@ -1,0 +1,16 @@
+.vs/
+
+.idea/
+
+*.user
+
+.DS_Store
+
+# Build results
+
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/tools/
+[Oo]bj/
+node_modules/

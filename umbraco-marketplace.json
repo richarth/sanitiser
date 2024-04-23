@@ -1,0 +1,16 @@
+{
+    "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+    "AuthorDetails": {
+        "Name": "Richard Thompson",
+        "ImageUrl": "https://github.com/richarth.png"
+    },
+    "Category": "Developer Tools",
+    "Description": "An Umbraco package for automatically clearing out personal data",
+    "LicenseTypes": [
+        "Free"
+    ],
+    "IssueTrackerUrl": "https://github.com/richarth/sanitiser/issues",
+    "PackageType": "Package",
+    "Tags": ["GDPR", "Data Protection", "Personal Data", "Privacy"],
+    "Title": "Umbraco Personal Data Sanitiser"
+}
