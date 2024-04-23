@@ -128,9 +128,9 @@ mapped to your new class.
 
 ### Logo
 
-The package logo uses the [Sanitiser](https://thenounproject.com/icon/sanitiser-6216442/){:target="_blank"} (by [Manish Mittal](https://thenounproject.com/creator/butterfingers/)){:target="_blank"} icon from
-the [Noun Project](https://thenounproject.com){:target="_blank"}, licensed
-under [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/){:target="_blank"}.
+The package logo uses the [Sanitiser](https://thenounproject.com/icon/sanitiser-6216442/) (by [Manish Mittal](https://thenounproject.com/creator/butterfingers/)) icon from
+the [Noun Project](https://thenounproject.com), licensed
+under [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/).
 
 ## License
 
