@@ -21,6 +21,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
+    <AssemblyName>Umbracro.Community.Sanitiser</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,10 +38,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="appsettings-schema.Sanitiser.json">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UmbracoJsonSchemaFiles Include="appsettings-schema.Sanitiser.json" Weight="-50" />
   </ItemGroup>
 
 </Project>
