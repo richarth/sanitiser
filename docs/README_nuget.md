@@ -6,6 +6,6 @@
 
 When enabled, this package will automatically remove personal data from your Umbraco website on startup.
 
-Out of the box the package will delete member data and form submissions.
+Out of the box the package will delete member data.
 
 Umbraco versions supported: v10.8.5+

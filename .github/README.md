@@ -6,7 +6,7 @@
 
 When enabled, this package will automatically remove personal data from your Umbraco website on startup.
 
-Out of the box the package will delete member data and form submissions.
+Out of the box the package will delete member data.
 
 Umbraco versions supported: v10.8.5+
 
@@ -53,21 +53,6 @@ your `appsettings.json`:
         "MembersSanitiser": {
             "Enable": true,
             "DomainsToExclude": "test.com,example.com"
-        }
-    }
-}
-```
-
-### Umbraco Forms Submissions
-
-To enable the deletion of form submissions, add the following to your `appsettings.json`:
-
-```json
-{
-    "Sanitiser": {
-        "Enabled": true,
-        "UmbracoFormsSanitiser": {
-            "Enable": true
         }
     }
 }
