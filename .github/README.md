@@ -107,7 +107,7 @@ public class TestTableSanitiser(IScopeProvider scopeProvider) : DatabaseTableSan
 > [!WARNING]
 > N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging
 environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
-> 
+>
 >If there is a lot of data then the startup of your site may be delayed. Only enable when necessary.
 
 ## Customisation

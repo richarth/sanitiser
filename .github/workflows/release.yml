@@ -23,7 +23,7 @@ jobs:
                     dotnet-version: 8.0.x
 
             -   name: Build project
-                run: dotnet build src\Sanitiser\Sanitiser.csproj --configuration Release
+                run: dotnet build src/Sanitiser/Sanitiser.csproj --configuration Release
 
             -   name: Push to NuGet
-                run: dotnet nuget push **\*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+                run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
