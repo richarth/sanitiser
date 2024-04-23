@@ -11,6 +11,11 @@
     ],
     "IssueTrackerUrl": "https://github.com/richarth/sanitiser/issues",
     "PackageType": "Package",
-    "Tags": ["GDPR", "Data Protection", "Personal Data", "Privacy"],
+    "Tags": [
+        "GDPR",
+        "Data Protection",
+        "Personal Data",
+        "Privacy"
+    ],
     "Title": "Umbraco Personal Data Sanitiser"
 }

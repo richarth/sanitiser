@@ -43,7 +43,8 @@ To enable the deletion of member data, add the following to your `appsettings.js
 }
 ```
 
-To exclude members whose email addresses belong to specific domains from deletion, add the following to your `appsettings.json`:
+To exclude members whose email addresses belong to specific domains from deletion, add the following to
+your `appsettings.json`:
 
 ```json
 {
@@ -74,7 +75,8 @@ To enable the deletion of form submissions, add the following to your `appsettin
 
 ### Custom database tables
 
-To enable the deletion of data from custom database tables, you can extend the `DatabaseTableSanitiser` class and create a poco with a table name attribute.
+To enable the deletion of data from custom database tables, you can extend the `DatabaseTableSanitiser` class and create
+a poco with a table name attribute.
 
 For example, to have a table called `test` automatically emptied on startup, create a poco like this:
 
@@ -103,26 +105,34 @@ public class TestTableSanitiser(IScopeProvider scopeProvider) : DatabaseTableSan
 ```
 
 > [!WARNING]
-
-N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
+> N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging
+environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
 
 If there is a lot of data then the startup of your site may be delayed. Only enable when necessary.
 
 ## Customisation
 
-To add your own sanitization logic, implement the `ISanitiser` interface. Your sanitization logic will be run automatically on startup when the sanitization service and your sanitizer are enabled.
+To add your own sanitization logic, implement the `ISanitiser` interface. Your sanitization logic will be run
+automatically on startup when the sanitization service and your sanitizer are enabled.
 
 Add your logic to the `Sanitise` method.
 
-You will also need to implement the enabled check in the `IsEnabled` method. You could check for a value in Umbraco, simply return true or more likely add a setting to `appsettings.json`.
+You will also need to implement the enabled check in the `IsEnabled` method. You could check for a value in Umbraco,
+simply return true or more likely add a setting to `appsettings.json`.
 
-If adding your own setting to the `Sanitiser` section of `appsettings.json`, you can add a new class which extends the `SanitiserOptions` class to include your new setting. The values from your `appsettings.json` will be automatically mapped to your new class.
+If adding your own setting to the `Sanitiser` section of `appsettings.json`, you can add a new class which extends
+the `SanitiserOptions` class to include your new setting. The values from your `appsettings.json` will be automatically
+mapped to your new class.
 
 ## Acknowledgements
 
 ### Logo
 
-The package logo uses the [Sanitiser](https://thenounproject.com/icon/sanitiser-6216442/) (by [Manish Mittal](https://thenounproject.com/creator/butterfingers/)) icon from the [Noun Project](https://thenounproject.com), licensed under [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/).
+The package logo uses the [Sanitiser](https://thenounproject.com/icon/sanitiser-6216442/) (
+by [Manish Mittal](https://thenounproject.com/creator/butterfingers/)) icon from
+the [Noun Project](https://thenounproject.com), licensed
+under [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/).
 
 ## License
+
 MIT License
