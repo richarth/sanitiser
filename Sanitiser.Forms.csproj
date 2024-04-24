@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <ContentTargetFolders>.</ContentTargetFolders>
+    <Product>Umbraco.Community.Sanitiser.Forms</Product>
+    <PackageId>Umbraco.Community.Sanitiser.Forms</PackageId>
+    <Title>Sanitiser.Forms</Title>
+    <Description>When enabled, this package will automatically remove Umbraco Forms submissions and associated file uploads from your Umbraco website on startup.</Description>
+    <PackageTags>umbraco;umbraco-marketplace</PackageTags>
+    <RootNamespace>Umbraco.Community.Sanitiser.Forms</RootNamespace>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>0.1.0</Version>
+    <Authors>Richard Thompson</Authors>
+    <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
+    <PackageProjectUrl>https://github.com/richarth/sanitiser.forms</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/richarth/sanitiser.forms</RepositoryUrl>
+    <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>logo.png</PackageIcon>
+    <AssemblyName>Umbracro.Community.Sanitiser.Forms</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.8.5" />
+    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.5" />
+    <PackageReference Include="Umbraco.Community.Sanitiser" Version="0.2.2" />
+    <PackageReference Include="Umbraco.Forms.Core" Version="10.5.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\assets\img\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\docs\README_nuget.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <Target Name="includeSchema">
+    <ItemGroup>
+      <UmbracoJsonSchemaFiles Include="$(MSBuildThisFileDirectory)appsettings-schema.SanitiserForms.json" />
+    </ItemGroup>
+  </Target>
+
+</Project>
