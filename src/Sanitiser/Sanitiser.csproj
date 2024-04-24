@@ -8,11 +8,11 @@
     <Product>Umbraco.Community.Sanitiser</Product>
     <PackageId>Umbraco.Community.Sanitiser</PackageId>
     <Title>Sanitiser</Title>
-    <Description>...</Description>
+    <Description>When enabled, this package will automatically remove personal data from your Umbraco website on startup.</Description>
     <PackageTags>umbraco;umbraco-marketplace</PackageTags>
     <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>Richard Thompson</Authors>
     <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
     <PackageProjectUrl>https://github.com/richarth/sanitiser</PackageProjectUrl>
@@ -22,6 +22,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
     <AssemblyName>Umbracro.Community.Sanitiser</AssemblyName>
+    <Platform>AnyCPU;x64;x86</Platform>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,8 +42,10 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <UmbracoJsonSchemaFiles Include="appsettings-schema.Sanitiser.json" Weight="-50" />
-  </ItemGroup>
+  <Target Name="includeSchema">
+    <ItemGroup>
+      <UmbracoJsonSchemaFiles Include="$(MSBuildThisFileDirectory)appsettings-schema.Sanitiser.json" />
+    </ItemGroup>
+  </Target>
 
 </Project>
