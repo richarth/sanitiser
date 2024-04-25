@@ -5,7 +5,7 @@
         "ImageUrl": "https://github.com/richarth.png"
     },
     "Category": "Developer Tools",
-    "Description": "An Umbraco package for automatically clearing out personal data",
+    "Description": "An Umbraco package for automatically clearing out personal data on site startup",
     "LicenseTypes": [
         "Free"
     ],
