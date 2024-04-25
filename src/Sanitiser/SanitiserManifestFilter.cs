@@ -11,7 +11,7 @@ internal class SanitiserManifestFilter : IManifestFilter
 
         manifests.Add(new PackageManifest
         {
-            PackageName = "Sanitiser",
+            PackageName = "Umbraco.Community.Sanitiser",
             Version = assembly.GetName()?.Version?.ToString(3) ?? "0.1.0",
             AllowPackageTelemetry = false
         });
