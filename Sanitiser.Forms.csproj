@@ -25,10 +25,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.8.5" />
-    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.5" />
-    <PackageReference Include="Umbraco.Community.Sanitiser" Version="0.2.2" />
-    <PackageReference Include="Umbraco.Forms.Core" Version="10.5.5" />
+    <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.8.5"/>
+    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.5"/>
+    <PackageReference Include="Umbraco.Community.Sanitiser" Version="0.2.2"/>
+    <PackageReference Include="Umbraco.Forms.Core" Version="10.5.5"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +44,7 @@
 
   <Target Name="includeSchema">
     <ItemGroup>
-      <UmbracoJsonSchemaFiles Include="$(MSBuildThisFileDirectory)appsettings-schema.SanitiserForms.json" />
+      <UmbracoJsonSchemaFiles Include="$(MSBuildThisFileDirectory)appsettings-schema.SanitiserForms.json"/>
     </ItemGroup>
   </Target>
 
