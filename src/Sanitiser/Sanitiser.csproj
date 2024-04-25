@@ -12,7 +12,7 @@
     <PackageTags>umbraco;umbraco-marketplace</PackageTags>
     <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.2.5</Version>
+    <Version>0.2.6</Version>
     <Authors>Richard Thompson</Authors>
     <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
     <PackageProjectUrl>https://github.com/richarth/sanitiser</PackageProjectUrl>
@@ -27,8 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="10.8.5"/>
-    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="10.8.5"/>
+    <PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.8.5,)"/>
+    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.5,)"/>
   </ItemGroup>
 
   <ItemGroup>
