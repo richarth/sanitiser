@@ -3,7 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <ContentTargetFolders>.</ContentTargetFolders>
     <Product>Umbraco.Community.Sanitiser</Product>
     <PackageId>Umbraco.Community.Sanitiser</PackageId>
