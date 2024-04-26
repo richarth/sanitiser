@@ -17,5 +17,10 @@
         "Personal Data",
         "Privacy"
     ],
-    "Title": "Sanitiser"
+    "Title": "Sanitiser",
+    "RelatedPackages": [
+        {
+            "PackageId": "Umbraco.Community.Sanitiser.Forms"
+        }
+    ]
 }
