@@ -23,7 +23,7 @@ To enable the package, add the following to your `appsettings.json`:
 ```json
 {
   "Sanitiser": {
-    "Enabled": true
+    "Enable": true
   }
 }
 ```
@@ -35,7 +35,7 @@ To enable the deletion of member data, add the following to your `appsettings.js
 ```json
 {
     "Sanitiser": {
-        "Enabled": true,
+        "Enable": true,
         "MembersSanitiser": {
             "Enable": true
         }
@@ -49,7 +49,7 @@ your `appsettings.json`:
 ```json
 {
     "Sanitiser": {
-        "Enabled": true,
+        "Enable": true,
         "MembersSanitiser": {
             "Enable": true,
             "DomainsToExclude": "test.com,example.com"
@@ -97,6 +97,8 @@ environment. Before enabling please ensure you have a backup of your data and a 
 
 ## Customisation
 
+### Custom sanitizer
+
 To add your own sanitization logic, implement the `ISanitiser` interface. Your sanitization logic will be run
 automatically on startup when the sanitization service and your sanitizer are enabled.
 
@@ -105,9 +107,46 @@ Add your logic to the `Sanitise` method.
 You will also need to implement the enabled check in the `IsEnabled` method. You could check for a value in Umbraco,
 simply return true or more likely add a setting to `appsettings.json`.
 
-If adding your own setting to the `Sanitiser` section of `appsettings.json`, you can add a new class which extends
-the `SanitiserOptions` class to include your new setting. The values from your `appsettings.json` will be automatically
-mapped to your new class.
+### Custom sanitizer settings
+
+If adding your own setting(s) to the `Sanitiser` section of `appsettings.json`, you can add a new class which extends `SanitiserOptions` to automatically include your new settings. For example:
+
+```csharp
+using Umbraco.Community.Sanitiser.Configuration;
+
+public class MySanitiserOptions : SanitiserOptions
+{
+    public MySettingsPoco Disable { get; init; }
+}
+
+public class MySettingsPoco
+{
+    public bool Disable { get; init; }
+}
+```
+
+You then need to add the following to your composer for your settings to be automatically configured:
+
+```csharp
+// your extension of SanitiserOptions is passed as a type parameter
+builder.Services.Configure<MySanitiserOptions>(
+            builder.Config.GetSection(SanitiserOptions.SanitiserOptionsKey));
+```
+
+If you were to add the following to your `appsettings.json`:
+
+```json
+{
+    "Sanitiser": {
+        "MySanitiserOptions": {
+            "Disable": true
+        }
+    }
+}
+```
+
+The values from your `appsettings.json` will be automatically
+mapped to your extension of `SanitiserOptions`.
 
 ## Acknowledgements
 
