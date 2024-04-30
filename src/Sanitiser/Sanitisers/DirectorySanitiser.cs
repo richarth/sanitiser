@@ -2,8 +2,6 @@ namespace Umbraco.Community.Sanitiser.sanitisers;
 
 public abstract class DirectorySanitiser : ISanitiser
 {
-    public abstract void SetDirectoryPath(string directoryPath);
-
     protected abstract string GetDirectoryPath();
 
     public async Task Sanitise()
