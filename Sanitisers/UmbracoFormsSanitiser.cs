@@ -1,38 +1,18 @@
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.Sanitiser.Forms.Configuration;
+using Umbraco.Community.Sanitiser.Forms.Models;
 using Umbraco.Community.Sanitiser.sanitisers;
-using Umbraco.Forms.Core.Models;
-using Umbraco.Forms.Core.Persistence.Dtos;
-using Umbraco.Forms.Core.Services;
 
 namespace Umbraco.Community.Sanitiser.Forms.Sanitisers;
 
-public class UmbracoFormsSanitiser(
-    IOptions<SanitiserFormsOptions> options,
-    IFormService formService,
-    IRecordService recordService,
-    IUmbracoContextFactory umbracoContextFactory) : ISanitiser
+public class UmbracoFormsSanitiser(IOptions<SanitiserFormsOptions> options, IScopeProvider scopeProvider) : ISanitiser
 {
     private readonly SanitiserFormsOptions _options = options.Value;
 
-    public Task Sanitise()
+    public async Task Sanitise()
     {
-        umbracoContextFactory.EnsureUmbracoContext();
-
-        IEnumerable<Form> forms = GetFormsOnSite();
-
-        foreach (Form form in forms)
-        {
-            IEnumerable<Record> formRecords = GetRecordsForForm(form);
-
-            foreach (Record record in formRecords)
-            {
-                recordService.Delete(record, form);
-            }
-        }
-
-        return Task.CompletedTask;
+        await DeleteFormEntries();
     }
 
     public bool IsEnabled()
@@ -40,13 +20,22 @@ public class UmbracoFormsSanitiser(
         return _options.UmbracoFormsSanitiser?.Enable ?? false;
     }
 
-    private IEnumerable<Form> GetFormsOnSite()
+    private async Task DeleteFormEntries()
     {
-        return formService.Get();
-    }
+        using IScope scope = scopeProvider.CreateScope();
 
-    private IEnumerable<Record> GetRecordsForForm(Form form)
-    {
-        return recordService.GetAllRecords(form, false);
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordsAudit>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataBit>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataDateTime>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataInteger>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataLongString>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataString>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordFields>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecordWorkflowAudit>().Execute();
+        await scope.Database.DeleteManyAsync<UmbracoFormsRecords>().Execute();
+
+        var a = Directory.GetDirectories("wwwroot/media/forms/upload/");
+
+        scope.Complete();
     }
 }

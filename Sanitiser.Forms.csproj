@@ -27,8 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.8.5,)"/>
     <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.5,)"/>
-    <PackageReference Include="Umbraco.Community.Sanitiser" Version="0.2.6"/>
-    <PackageReference Include="Umbraco.Forms.Core" Version="[10.5.5,)"/>
+    <PackageReference Include="Umbraco.Community.Sanitiser" Version="0.3.1"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -43,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="buildTransitive\**" PackagePath="buildTransitive" />
+    <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
   </ItemGroup>
 
 </Project>
