@@ -2,14 +2,14 @@ namespace Umbraco.Community.Sanitiser.sanitisers;
 
 public abstract class DirectorySanitiser : ISanitiser
 {
-    protected abstract string GetDirectoryPath();
-
     public async Task Sanitise()
     {
         await EmptyDirectory(GetDirectoryPath());
     }
 
     public abstract bool IsEnabled();
+
+    protected abstract string GetDirectoryPath();
 
     private static Task RemoveDirectoriesInDirectory(string? directory)
     {

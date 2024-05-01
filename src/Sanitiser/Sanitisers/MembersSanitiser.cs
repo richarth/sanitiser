@@ -8,12 +8,21 @@ using Umbraco.Community.Sanitiser.Models;
 
 namespace Umbraco.Community.Sanitiser.sanitisers;
 
-public class MembersSanitiser(
-    IOptions<SanitiserOptions> sanitiserOptions,
-    IMemberService memberService,
-    IScopeProvider scopeProvider) : ISanitiser
+public class MembersSanitiser : ISanitiser
 {
-    private readonly SanitiserOptions _sanitiserOptions = sanitiserOptions.Value;
+    private readonly IMemberService _memberService;
+    private readonly SanitiserOptions _sanitiserOptions;
+    private readonly IScopeProvider _scopeProvider;
+
+    public MembersSanitiser(
+        IOptions<SanitiserOptions> sanitiserOptions,
+        IMemberService memberService,
+        IScopeProvider scopeProvider)
+    {
+        _sanitiserOptions = sanitiserOptions.Value;
+        _memberService = memberService;
+        _scopeProvider = scopeProvider;
+    }
 
     public async Task Sanitise()
     {
@@ -35,11 +44,11 @@ public class MembersSanitiser(
     {
         var domainsToExclude = _sanitiserOptions.MembersSanitiser?.DomainsToExclude ?? string.Empty;
 
-        memberService.GetAll(0, 10, out var numberOfMembers);
+        _memberService.GetAll(0, 10, out var numberOfMembers);
 
         for (var i = 0; i < numberOfMembers; i += 10)
         {
-            IEnumerable<IMember> members = memberService.GetAll(i, 10, out _);
+            IEnumerable<IMember> members = _memberService.GetAll(i, 10, out _);
 
             foreach (IMember member in members)
             {
@@ -48,7 +57,7 @@ public class MembersSanitiser(
                     continue;
                 }
 
-                memberService.Delete(member);
+                _memberService.Delete(member);
             }
         }
 
@@ -57,7 +66,7 @@ public class MembersSanitiser(
 
     private async Task RemoveCachedMemberData()
     {
-        using IScope scope = scopeProvider.CreateScope();
+        using IScope scope = _scopeProvider.CreateScope();
 
         // the umbracoCacheInstruction table stores the member username, so we need to remove it
         await scope.Database.DeleteMany<UmbracoCacheInstruction>().Where(x =>
