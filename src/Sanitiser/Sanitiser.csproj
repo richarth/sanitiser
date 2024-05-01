@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
+    <Content Include="appsettings-schema.Sanitiser.json" PackagePath="" />
   </ItemGroup>
 
 </Project>
