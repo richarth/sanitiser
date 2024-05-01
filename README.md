@@ -91,7 +91,7 @@ public class TestTableSanitiser(IScopeProvider scopeProvider) : DatabaseTableSan
 
 > [!WARNING]
 > N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging
-environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
+> environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
 >
 >If there is a lot of data then the startup of your site may be delayed. Only enable when necessary.
 
@@ -109,7 +109,8 @@ simply return true or more likely add a setting to `appsettings.json`.
 
 ### Custom sanitizer settings
 
-If adding your own setting(s) to the `Sanitiser` section of `appsettings.json`, you can add a new class which extends `SanitiserOptions` to automatically include your new settings. For example:
+If adding your own setting(s) to the `Sanitiser` section of `appsettings.json`, you can add a new class which
+extends `SanitiserOptions` to automatically include your new settings. For example:
 
 ```csharp
 using Umbraco.Community.Sanitiser.Configuration;
@@ -152,7 +153,8 @@ mapped to your extension of `SanitiserOptions`.
 
 ### Logo
 
-The package logo uses the [Sanitiser](https://thenounproject.com/icon/sanitiser-6216442/) (by [Manish Mittal](https://thenounproject.com/creator/butterfingers/)) icon from
+The package logo uses the [Sanitiser](https://thenounproject.com/icon/sanitiser-6216442/) (
+by [Manish Mittal](https://thenounproject.com/creator/butterfingers/)) icon from
 the [Noun Project](https://thenounproject.com), licensed
 under [CC BY 3.0 US](https://creativecommons.org/licenses/by/3.0/us/).
 

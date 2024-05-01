@@ -4,8 +4,12 @@ using Umbraco.Cms.Infrastructure.Scoping;
 
 namespace Umbraco.Community.Sanitiser.sanitisers;
 
-public abstract class DatabaseTableSanitiser<T>(IScopeProvider scopeProvider) : ISanitiser
+public abstract class DatabaseTableSanitiser<T> : ISanitiser
 {
+    private readonly IScopeProvider _scopeProvider;
+
+    protected DatabaseTableSanitiser(IScopeProvider scopeProvider) => _scopeProvider = scopeProvider;
+
     public async Task Sanitise()
     {
         await EmptyTable();
@@ -15,7 +19,7 @@ public abstract class DatabaseTableSanitiser<T>(IScopeProvider scopeProvider) : 
 
     private async Task EmptyTable()
     {
-        using IScope scope = scopeProvider.CreateScope();
+        using IScope scope = _scopeProvider.CreateScope();
 
         if (TableExists(scope.Database))
         {

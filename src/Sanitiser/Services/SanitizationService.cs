@@ -5,9 +5,11 @@ using Umbraco.Community.Sanitiser.sanitisers;
 
 namespace Umbraco.Community.Sanitiser.services;
 
-public class SanitizationService(IOptions<SanitiserOptions> options) : ISanitisationService
+public class SanitizationService : ISanitisationService
 {
-    private readonly SanitiserOptions _options = options.Value;
+    private readonly SanitiserOptions _options;
+
+    public SanitizationService(IOptions<SanitiserOptions> options) => _options = options.Value;
 
     public async Task Sanitise(SanitisersCollection sanitisers)
     {
