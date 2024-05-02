@@ -12,7 +12,7 @@
     <PackageTags>umbraco;umbraco-marketplace</PackageTags>
     <RootNamespace>Umbraco.Community.Sanitiser.Forms</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>Richard Thompson</Authors>
     <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
     <PackageProjectUrl>https://github.com/richarth/sanitiser.forms</PackageProjectUrl>
@@ -36,6 +36,10 @@
       <PackagePath>\</PackagePath>
     </None>
     <None Include="..\..\docs\README_nuget.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="appsettings-schema.Sanitiser.Forms.json">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
