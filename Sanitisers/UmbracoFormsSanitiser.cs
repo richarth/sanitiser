@@ -6,9 +6,16 @@ using Umbraco.Community.Sanitiser.sanitisers;
 
 namespace Umbraco.Community.Sanitiser.Forms.Sanitisers;
 
-public class UmbracoFormsSanitiser(IOptions<SanitiserFormsOptions> options, IScopeProvider scopeProvider) : ISanitiser
+public class UmbracoFormsSanitiser : ISanitiser
 {
-    private readonly SanitiserFormsOptions _options = options.Value;
+    private readonly IScopeProvider _scopeProvider;
+    private readonly SanitiserFormsOptions _options;
+
+    public UmbracoFormsSanitiser(IOptions<SanitiserFormsOptions> options, IScopeProvider scopeProvider)
+    {
+        _scopeProvider = scopeProvider;
+        _options = options.Value;
+    }
 
     public async Task Sanitise()
     {
@@ -22,7 +29,7 @@ public class UmbracoFormsSanitiser(IOptions<SanitiserFormsOptions> options, ISco
 
     private async Task DeleteFormEntries()
     {
-        using IScope scope = scopeProvider.CreateScope();
+        using IScope scope = _scopeProvider.CreateScope();
 
         await scope.Database.DeleteManyAsync<UmbracoFormsRecordsAudit>().Execute();
         await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataBit>().Execute();
@@ -33,8 +40,6 @@ public class UmbracoFormsSanitiser(IOptions<SanitiserFormsOptions> options, ISco
         await scope.Database.DeleteManyAsync<UmbracoFormsRecordFields>().Execute();
         await scope.Database.DeleteManyAsync<UmbracoFormsRecordWorkflowAudit>().Execute();
         await scope.Database.DeleteManyAsync<UmbracoFormsRecords>().Execute();
-
-        var a = Directory.GetDirectories("wwwroot/media/forms/upload/");
 
         scope.Complete();
     }

@@ -4,9 +4,11 @@ using Umbraco.Community.Sanitiser.sanitisers;
 
 namespace Umbraco.Community.Sanitiser.Forms.Sanitisers;
 
-public class UmbracoFormsUploadsSanitiser(IOptions<SanitiserFormsOptions> options) : DirectorySanitiser
+public class UmbracoFormsUploadsSanitiser : DirectorySanitiser
 {
-    private readonly SanitiserFormsOptions _options = options.Value;
+    private readonly SanitiserFormsOptions _options;
+
+    public UmbracoFormsUploadsSanitiser(IOptions<SanitiserFormsOptions> options) => _options = options.Value;
 
     protected override string GetDirectoryPath()
     {
