@@ -44,7 +44,9 @@
 
   <ItemGroup>
     <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
-    <Content Include="appsettings-schema.Sanitiser.json" PackagePath="" />
+    <Content Update="appsettings-schema.Sanitiser.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
