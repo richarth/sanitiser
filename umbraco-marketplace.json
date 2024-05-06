@@ -2,7 +2,8 @@
     "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
     "AuthorDetails": {
         "Name": "Richard Thompson",
-        "ImageUrl": "https://github.com/richarth.png"
+        "ImageUrl": "https://github.com/richarth.png",
+        "Description": "An Umbraco certified professional and Umbraco lead at Moore-Wilson.  I have over a decade of Umbraco experience and more than 20 years of web development experience.  I'm a regular Umbraco meetup attendee and Umbraco contributor."
     },
     "Category": "Developer Tools",
     "Description": "An Umbraco package for automatically clearing out personal data on site startup",
