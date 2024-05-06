@@ -89,6 +89,27 @@ public class TestTableSanitiser(IScopeProvider scopeProvider) : DatabaseTableSan
 }
 ```
 
+### Directory sanitization
+
+To enable the deletion of files and folders in a directory, you can extend the `DirectorySanitiser` class and implement the `IsEnabled` and `GetDirectoryPath` methods. `GetDirectoryPath` should return the path you want clearing out. E.g.
+
+```csharp
+using Umbraco.Community.Sanitiser.sanitisers;
+
+public class MyCustomDirectorySanitiser : DirectorySanitiser
+{
+    protected override string GetDirectoryPath()
+    {
+        return "wwwroot/media/forms/upload/";
+    }
+
+    public override bool IsEnabled()
+    {
+        return true;
+    }
+}
+```
+
 > [!WARNING]
 > N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging
 > environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
