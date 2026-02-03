@@ -1,0 +1,311 @@
+{
+  "@t": "2024-04-22T16:50:09.0980860Z",
+  "@mt": "Acquiring MainDom.",
+  "SourceContext": "Umbraco.Cms.Core.Runtime.MainDom",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:09.1063320Z",
+  "@mt": "Acquired MainDom.",
+  "SourceContext": "Umbraco.Cms.Core.Runtime.MainDom",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:09.7026660Z",
+  "@mt": "No last synced Id found, this generally means this is a new server/install. A cold boot will be triggered.",
+  "@l": "Warning",
+  "SourceContext": "Umbraco.Cms.Infrastructure.Sync.SyncBootStateAccessor",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "WARN "
+}
+{
+  "@t": "2024-04-22T16:50:10.9416350Z",
+  "@mt": "Now listening on: {address}",
+  "address": "https://localhost:44303",
+  "EventId": {
+    "Id": 14,
+    "Name": "ListeningOnAddress"
+  },
+  "SourceContext": "Microsoft.Hosting.Lifetime",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:10.9420280Z",
+  "@mt": "Now listening on: {address}",
+  "address": "http://localhost:4665",
+  "EventId": {
+    "Id": 14,
+    "Name": "ListeningOnAddress"
+  },
+  "SourceContext": "Microsoft.Hosting.Lifetime",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:10.9452170Z",
+  "@mt": "Application started. Press Ctrl+C to shut down.",
+  "SourceContext": "Microsoft.Hosting.Lifetime",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:10.9454150Z",
+  "@mt": "Hosting environment: {EnvName}",
+  "EnvName": "Development",
+  "SourceContext": "Microsoft.Hosting.Lifetime",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:10.9454330Z",
+  "@mt": "Content root path: {ContentRoot}",
+  "ContentRoot": "/Users/richardthompson/git/sanitiser/src/Sanitiser.TestSite.V10",
+  "SourceContext": "Microsoft.Hosting.Lifetime",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 1,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}
+{
+  "@t": "2024-04-22T16:50:11.6655800Z",
+  "@mt": "Registered with MainDom, localContentDbExists? {LocalContentDbExists}, localMediaDbExists? {LocalMediaDbExists}",
+  "LocalContentDbExists": true,
+  "LocalMediaDbExists": true,
+  "SourceContext": "Umbraco.Cms.Infrastructure.PublishedCache.PublishedSnapshotService",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:11.6680110Z",
+  "@mt": "Creating the content store, localContentDbExists? {LocalContentDbExists}",
+  "LocalContentDbExists": true,
+  "SourceContext": "Umbraco.Cms.Infrastructure.PublishedCache.PublishedSnapshotService",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:11.6699540Z",
+  "@mt": "Creating the media store, localMediaDbExists? {LocalMediaDbExists}",
+  "LocalMediaDbExists": true,
+  "SourceContext": "Umbraco.Cms.Infrastructure.PublishedCache.PublishedSnapshotService",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:11.8049440Z",
+  "@mt": "{StartMessage} [Timing {TimingId}]",
+  "StartMessage": "Loading content from database",
+  "TimingId": "e22fda1",
+  "SourceContext": "Umbraco.Cms.Core.Logging.ProfilingLogger",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:11.9686000Z",
+  "@mt": "{EndMessage} ({Duration}ms) [Timing {TimingId}]",
+  "EndMessage": "Completed.",
+  "Duration": 163,
+  "TimingId": "e22fda1",
+  "SourceContext": "Umbraco.Cms.Core.Logging.ProfilingLogger",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:11.9860780Z",
+  "@mt": "{StartMessage} [Timing {TimingId}]",
+  "StartMessage": "Loading media from database",
+  "TimingId": "d05f150",
+  "SourceContext": "Umbraco.Cms.Core.Logging.ProfilingLogger",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:12.0092930Z",
+  "@mt": "{EndMessage} ({Duration}ms) [Timing {TimingId}]",
+  "EndMessage": "Completed.",
+  "Duration": 23,
+  "TimingId": "d05f150",
+  "SourceContext": "Umbraco.Cms.Core.Logging.ProfilingLogger",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "862a61dd-b07c-4c72-872b-ae2b14d1682b",
+  "HttpRequestNumber": 1,
+  "HttpSessionId": "0"
+}
+{
+  "@t": "2024-04-22T16:50:14.5691940Z",
+  "@mt": "An unhandled exception has occurred while executing the request.",
+  "@l": "Error",
+  "@x": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.CompilationFailedException: One or more compilation failures occurred:\nfd4xk20k.fqt(82,90): error CS0234: The type or namespace name 'Page' does not exist in the namespace 'Umbraco.Cms.Web.Common.PublishedModels' (are you missing an assembly reference?)\n   at Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.RuntimeViewCompiler.CompileAndEmit(RazorCodeDocument codeDocument, String generatedCode)\n   at Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.RuntimeViewCompiler.CompileAndEmit(String relativePath)\n   at Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.RuntimeViewCompiler.OnCacheMiss(String normalizedPath)\n--- End of stack trace from previous location ---\n   at Microsoft.AspNetCore.Mvc.Razor.Compilation.DefaultRazorPageFactoryProvider.CreateFactory(String relativePath)\n   at Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.CreateCacheResult(HashSet`1 expirationTokens, String relativePath, Boolean isMainPage)\n   at Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.OnCacheMiss(ViewLocationExpanderContext expanderContext, ViewLocationCacheKey cacheKey)\n   at Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.LocatePageFromViewLocations(ActionContext actionContext, String pageName, Boolean isMainPage)\n   at Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.FindView(ActionContext context, String viewName, Boolean isMainPage)\n   at Umbraco.Cms.Web.Common.ModelsBuilder.RefreshingRazorViewEngine.FindView(ActionContext context, String viewName, Boolean isMainPage)\n   at Umbraco.Cms.Web.Website.ViewEngines.ProfilingViewEngine.FindView(ActionContext context, String viewName, Boolean isMainPage)\n   at Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.FindView(ActionContext context, String viewName, Boolean isMainPage)\n   at Umbraco.Cms.Web.Common.Controllers.UmbracoPageController.EnsurePhsyicalViewExists(String template)\n   at Umbraco.Cms.Web.Common.Controllers.RenderController.CurrentTemplate[T](T model)\n   at Umbraco.Cms.Web.Common.Controllers.RenderController.Index()\n   at lambda_method12(Closure, Object, Object[])\n   at Microsoft.Extensions.Internal.ObjectMethodExecutor.Execute(Object target, Object[] parameters)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.SyncActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Logged|12_1(ControllerActionInvoker invoker)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()\n--- End of stack trace from previous location ---\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeNextExceptionFilterAsync>g__Awaited|26_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ExceptionContextSealed context)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeNextResourceFilter()\n--- End of stack trace from previous location ---\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Rethrow(ResourceExecutedContextSealed context)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.InvokeFilterPipelineAsync()\n--- End of stack trace from previous location ---\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)\n   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)\n   at Umbraco.Cms.Web.Common.Middleware.BasicAuthenticationMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.InterfaceMiddlewareBinder.<>c__DisplayClass2_0.<<CreateMiddleware>b__0>d.MoveNext()\n--- End of stack trace from previous location ---\n   at Umbraco.Cms.Web.BackOffice.Middleware.BackOfficeExternalLoginProviderErrorMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.InterfaceMiddlewareBinder.<>c__DisplayClass2_0.<<CreateMiddleware>b__0>d.MoveNext()\n--- End of stack trace from previous location ---\n   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)\n   at Microsoft.AspNetCore.Session.SessionMiddleware.Invoke(HttpContext context)\n   at Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.Invoke(HttpContext context)\n   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)\n   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)\n   at SixLabors.ImageSharp.Web.Middleware.ImageSharpMiddleware.Invoke(HttpContext httpContext, Boolean retry)\n   at StackExchange.Profiling.MiniProfilerMiddleware.Invoke(HttpContext context) in C:\\projects\\dotnet\\src\\MiniProfiler.AspNetCore\\MiniProfilerMiddleware.cs:line 119\n   at Umbraco.Cms.Web.Common.Middleware.UmbracoRequestMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Umbraco.Cms.Web.Common.Middleware.UmbracoRequestMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.InterfaceMiddlewareBinder.<>c__DisplayClass2_0.<<CreateMiddleware>b__0>d.MoveNext()\n--- End of stack trace from previous location ---\n   at Umbraco.Cms.Web.Common.Middleware.PreviewAuthenticationMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.InterfaceMiddlewareBinder.<>c__DisplayClass2_0.<<CreateMiddleware>b__0>d.MoveNext()\n--- End of stack trace from previous location ---\n   at Umbraco.Cms.Web.Common.Middleware.UmbracoRequestLoggingMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.InterfaceMiddlewareBinder.<>c__DisplayClass2_0.<<CreateMiddleware>b__0>d.MoveNext()\n--- End of stack trace from previous location ---\n   at Umbraco.Forms.Web.HttpModules.ProtectFormUploadRequestsMiddleware.InvokeAsync(HttpContext context, RequestDelegate next)\n   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.InterfaceMiddlewareBinder.<>c__DisplayClass2_0.<<CreateMiddleware>b__0>d.MoveNext()\n--- End of stack trace from previous location ---\n   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)",
+  "EventId": {
+    "Id": 1,
+    "Name": "UnhandledException"
+  },
+  "SourceContext": "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware",
+  "RequestId": "0HN32TH36NQQE:00000001",
+  "RequestPath": "/",
+  "ConnectionId": "0HN32TH36NQQE",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 14,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "ERROR"
+}
+{
+  "@t": "2024-04-22T16:51:19.8488850Z",
+  "@mt": "The temp data cookie {CookieName} could not be loaded.",
+  "@l": "Warning",
+  "@x": "System.Security.Cryptography.CryptographicException: The payload was invalid. For more information go to https://aka.ms/aspnet/dataprotectionwarning\n   at Microsoft.AspNetCore.DataProtection.Managed.ManagedAuthenticatedEncryptor.Decrypt(ArraySegment`1 protectedPayload, ArraySegment`1 additionalAuthenticatedData)\n   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.UnprotectCore(Byte[] protectedData, Boolean allowOperationsOnRevokedKeys, UnprotectStatus& status)\n   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.DangerousUnprotect(Byte[] protectedData, Boolean ignoreRevocationErrors, Boolean& requiresMigration, Boolean& wasRevoked)\n   at Microsoft.AspNetCore.DataProtection.KeyManagement.KeyRingBasedDataProtector.Unprotect(Byte[] protectedData)\n   at Microsoft.AspNetCore.Mvc.ViewFeatures.CookieTempDataProvider.LoadTempData(HttpContext context)",
+  "CookieName": ".AspNetCore.Mvc.CookieTempDataProvider",
+  "EventId": {
+    "Id": 3,
+    "Name": "TempDataCookieLoadFailure"
+  },
+  "SourceContext": "Microsoft.AspNetCore.Mvc.ViewFeatures.CookieTempDataProvider",
+  "ActionId": "49da035e-5bd6-44a3-b764-34ad3d51cf64",
+  "ActionName": "Umbraco.Cms.Web.BackOffice.Controllers.BackOfficeController.Default (Umbraco.Web.BackOffice)",
+  "RequestId": "0HN32TH36NQQF:00000001",
+  "RequestPath": "/umbraco",
+  "ConnectionId": "0HN32TH36NQQF",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 10,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "WARN ",
+  "HttpRequestId": "131cd3b4-0900-4d5e-b1ca-a8f3a842c130",
+  "HttpRequestNumber": 2,
+  "HttpSessionId": "11e9f48b-2f9c-6f63-0ea5-f5ffe3406ebc"
+}
+{
+  "@t": "2024-04-22T16:52:16.4236490Z",
+  "@mt": "Adding examine event handlers for {RegisteredIndexers} index providers.",
+  "RegisteredIndexers": 4,
+  "SourceContext": "Umbraco.Cms.Infrastructure.Examine.ExamineUmbracoIndexingHandler",
+  "ActionId": "65a53d7a-4444-4b93-a890-6126d3cb05c0",
+  "ActionName": "Umbraco.Cms.Web.BackOffice.Controllers.ContentController.DeleteById (Umbraco.Web.BackOffice)",
+  "RequestId": "0HN32TH36NQQG:0000002F",
+  "RequestPath": "/umbraco/backoffice/umbracoapi/content/DeleteById",
+  "ConnectionId": "0HN32TH36NQQG",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 10,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO ",
+  "HttpRequestId": "44a61982-98c8-4617-b584-9149b75a555b",
+  "HttpRequestNumber": 3,
+  "HttpSessionId": "1b795a2e-205a-00e8-33e6-f690cc423438"
+}
+{
+  "@t": "2024-04-22T16:53:10.0665610Z",
+  "@mt": "Umbraco Forms scheduled record deletion task will not run as it has been not enabled via configuration. To enable, set the configuration value at 'Umbraco:Forms:Options:ScheduledRecordDeletion:Enabled' to true.",
+  "SourceContext": "Umbraco.Forms.Core.HostedServices.ScheduledRecordDeletion",
+  "ProcessId": 8568,
+  "ProcessName": "dotnet",
+  "ThreadId": 35,
+  "ApplicationId": "c70b0b4721fc49e3fadd3161db1643cb6fba8d81",
+  "MachineName": "Richards-MBP",
+  "Log4NetLevel": "INFO "
+}

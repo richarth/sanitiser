@@ -1,95 +1,102 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Infrastructure.Persistence.Dtos;
-using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.Sanitiser.Configuration;
+using Umbraco.Community.Sanitiser.Persistence;
+using Umbraco.Community.Sanitiser.Utility;
 
 
 namespace Umbraco.Community.Sanitiser.sanitisers;
 
-public class MembersSanitiser : ISanitiser
+public class MembersSanitiser(
+    IOptions<SanitiserOptions> sanitiserOptions,
+    IMemberService memberService,
+    SanitiserDbContext dbContext,
+    ILogger<MembersSanitiser> logger)
+    : ISanitiser
 {
-    private readonly IMemberService _memberService;
-    private readonly SanitiserOptions _sanitiserOptions;
-    private readonly IScopeProvider _scopeProvider;
-    private readonly ILogger<MembersSanitiser> _logger;
-
-    public MembersSanitiser(
-        IOptions<SanitiserOptions> sanitiserOptions,
-        IMemberService memberService,
-        IScopeProvider scopeProvider,
-        ILogger<MembersSanitiser> logger)
-    {
-        _sanitiserOptions = sanitiserOptions.Value;
-        _memberService = memberService;
-        _scopeProvider = scopeProvider;
-        _logger = logger;
-    }
+    private readonly SanitiserOptions _sanitiserOptions = sanitiserOptions.Value;
 
     public async Task Sanitise()
     {
-        // remove all members then remove their cached data
-        await Task.WhenAll(RemoveAllMembers(), RemoveCachedMemberData());
+        // remove all members, then remove their cached data
+        await RemoveAllMembers();
+        await RemoveCachedMemberData();
     }
 
     public bool IsEnabled()
     {
-        return _sanitiserOptions.MembersSanitiser?.Enable ?? false;
-    }
-
-    private static bool IsEmailDomainExcluded(string email, string domainsToExclude)
-    {
-        return domainsToExclude.Contains(email.Split('@')[1]);
+        return _sanitiserOptions.MembersSanitiser.Enable;
     }
 
     private Task RemoveAllMembers()
     {
-        _logger.LogInformation("Removing members...");
+        logger.LogInformation("Removing members...");
 
-        var domainsToExclude = _sanitiserOptions.MembersSanitiser?.DomainsToExclude ?? string.Empty;
-        _logger.LogInformation("Excluding domains: {domains}", string.Join(", ", domainsToExclude));
+        var domainsToExclude = _sanitiserOptions.MembersSanitiser.DomainsToExclude;
 
-        _memberService.GetAll(0, 10, out var numberOfMembers);
+        // Get all members in one go to avoid pagination issues during deletion
+        var allMembers = memberService.GetAll(0, int.MaxValue, out _)
+            .ToList();
 
-        for (var i = 0; i < numberOfMembers; i += 10)
+        logger.LogInformation("Found {totalMembers} members to process", allMembers.Count);
+
+        var deletedCount = 0;
+
+        foreach (IMember member in allMembers)
         {
-            IEnumerable<IMember> members = _memberService.GetAll(i, 10, out _);
-
-            foreach (IMember member in members)
+            if (EmailHelper.IsEmailDomainExcluded(member.Email, domainsToExclude))
             {
-                if (IsEmailDomainExcluded(member.Email, domainsToExclude))
-                {
-                    continue;
-                }
+                logger.LogInformation("Skipping member {memberId} - domain excluded", member.Id);
+                continue;
+            }
 
-                _memberService.Delete(member);
+            try
+            {
+                memberService.Delete(member);
+                deletedCount++;
+                logger.LogInformation("Deleted member: {memberId}", member.Id);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to delete member: {memberId}", member.Id);
             }
         }
 
-        _logger.LogInformation("Finished removing members.");
-
+        logger.LogInformation("Finished removing members. Deleted {deletedCount} out of {totalMembers} members.", deletedCount, allMembers.Count);
 
         return Task.CompletedTask;
     }
 
     private async Task RemoveCachedMemberData()
     {
-        _logger.LogInformation("Removing cached member data...");
-
-        using IScope scope = _scopeProvider.CreateScope();
+        logger.LogInformation("Removing cached member data...");
 
         // the umbracoCacheInstruction table stores the member username, so we need to remove it
-        await scope.Database.DeleteMany<CacheInstructionDto>().Where(x =>
-                x.Instructions.Contains(
-                    $"\"RefresherId\":\"{MemberCacheRefresher.UniqueId.ToString().ToLowerInvariant()}\""))
-            .ExecuteAsync();
+        try
+        {
+            var refresherId = MemberCacheRefresher.UniqueId.ToString().ToLowerInvariant();
+            var searchString = $"%\"RefresherId\":\"{refresherId}\"%";
 
-        scope.Complete();
+            var instructionsToRemove = await dbContext.CacheInstructions
+                .Where(x => EF.Functions.Like(x.Instructions, searchString))
+                .ToListAsync();
 
-        _logger.LogInformation("Finished removing cached member data.");
+            if (instructionsToRemove.Count > 0)
+            {
+                dbContext.CacheInstructions.RemoveRange(instructionsToRemove);
+                await dbContext.SaveChangesAsync();
+                logger.LogInformation("Removed {count} cached member instructions.", instructionsToRemove.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to remove cached member data.");
+        }
 
+        logger.LogInformation("Finished removing cached member data.");
     }
 }

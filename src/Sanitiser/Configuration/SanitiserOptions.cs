@@ -4,6 +4,7 @@ public class SanitiserOptions
 {
     public const string SanitiserOptionsKey = "Sanitiser";
     public bool Enable { get; init; }
-    public MembersSanitiserOptions? MembersSanitiser { get; init; }
-    public UsersSanitiserOptions UsersSanitiser { get; init; } = new UsersSanitiserOptions();
+    public bool ProductionOverride { get; init; }
+    public MembersSanitiserOptions MembersSanitiser { get; } = new();
+    public UsersSanitiserOptions UsersSanitiser { get; init; } = new();
 }

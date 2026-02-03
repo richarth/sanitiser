@@ -1,15 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using NPoco;
-using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Community.Sanitiser.Persistence;
 
 namespace Umbraco.Community.Sanitiser.sanitisers;
 
-public abstract class DatabaseTableSanitiser<T> : ISanitiser
+public abstract class DatabaseTableSanitiser<T>(SanitiserDbContext dbContext) : ISanitiser where T : class
 {
-    private readonly IScopeProvider _scopeProvider;
-
-    protected DatabaseTableSanitiser(IScopeProvider scopeProvider) => _scopeProvider = scopeProvider;
-
     public async Task Sanitise()
     {
         await EmptyTable();
@@ -19,22 +15,29 @@ public abstract class DatabaseTableSanitiser<T> : ISanitiser
 
     private async Task EmptyTable()
     {
-        using IScope scope = _scopeProvider.CreateScope();
-
-        if (TableExists(scope.Database))
+        var tableName = GetTableName();
+        if (string.IsNullOrEmpty(tableName))
         {
-            await scope.Database.DeleteManyAsync<T>().Execute();
+            return;
         }
 
-        scope.Complete();
+        // Validate table name to mitigate SQL injection risk
+        if (!IsValidTableName(tableName))
+        {
+            throw new InvalidOperationException($"Invalid table name: {tableName}");
+        }
+
+        // Using ExecuteSqlRaw to truncate/delete from table
+        // This is more efficient for emptying a whole table and doesn't require T to be mapped in DbContext
+#pragma warning disable EF1002
+        await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{tableName}]");
+#pragma warning restore EF1002
     }
 
-    private static bool TableExists(IUmbracoDatabase umbracoDatabase)
+    private static bool IsValidTableName(string tableName)
     {
-        var tableName = GetTableName();
-
-        // check if the table exists in the database
-        return umbracoDatabase.SqlContext.SqlSyntax.DoesTableExist(umbracoDatabase, tableName);
+        // Basic validation: only allow alphanumeric and underscores
+        return !string.IsNullOrEmpty(tableName) && tableName.All(c => char.IsLetterOrDigit(c) || c == '_');
     }
 
     private static string GetTableName()

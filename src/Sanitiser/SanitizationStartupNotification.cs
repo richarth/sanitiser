@@ -5,19 +5,13 @@ using Umbraco.Community.Sanitiser.services;
 
 namespace Umbraco.Community.Sanitiser;
 
-public class SanitizationStartupNotification : INotificationHandler<UmbracoApplicationStartingNotification>
+public class SanitizationStartupNotification(
+    ISanitisationService sanitizationService,
+    SanitisersCollection sanitisers)
+    : INotificationAsyncHandler<UmbracoApplicationStartingNotification>
 {
-    private readonly SanitisersCollection _sanitisers;
-    private readonly ISanitisationService _sanitizationService;
-
-    public SanitizationStartupNotification(ISanitisationService sanitizationService, SanitisersCollection sanitisers)
+    public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
     {
-        _sanitizationService = sanitizationService;
-        _sanitisers = sanitisers;
-    }
-
-    public void Handle(UmbracoApplicationStartingNotification notification)
-    {
-        _sanitizationService.Sanitise(_sanitisers);
+        await sanitizationService.Sanitise(sanitisers);
     }
 }
