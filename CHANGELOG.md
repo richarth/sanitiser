@@ -28,6 +28,9 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 - **Cache-cleanup drift detection.** If records were sanitised but the `umbracoCacheInstruction` table
   contains entries that none of the expected refresher patterns match, a warning is logged — surfacing the
   otherwise-silent case where Umbraco's cache-instruction format has changed and personal data could remain.
+- **`DirectorySanitiser` safety guard.** The target directory must resolve to a location strictly inside the
+  site content root; an empty path, the content root itself, or a path outside the site (including via `..`)
+  now throws instead of deleting anything.
 - **Dry run.** A `Sanitiser:DryRun` option makes every sanitiser log the changes it would make without making
   any. It is delivered to each sanitiser through the new `SanitisationContext` passed to `ISanitiser.Sanitise`,
   so the built-in user/member sanitisers, the `DatabaseTableSanitiser`/`DirectorySanitiser` base classes, and

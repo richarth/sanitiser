@@ -33,7 +33,7 @@ public class SanitizationService(
                     "log the changes it would make.");
             }
 
-            var context = new SanitisationContext(_options.DryRun, logger);
+            var context = new SanitisationContext(_options.DryRun, logger, hostEnvironment.ContentRootPath);
 
             logger.LogInformation("Sanitization started.");
 

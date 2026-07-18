@@ -6,7 +6,8 @@ public abstract class DirectorySanitiser : ISanitiser
 {
     public async Task Sanitise(SanitisationContext context)
     {
-        var directory = GetDirectoryPath();
+        // Resolve and validate up front so a misconfigured path is caught in dry run too.
+        var directory = ResolveDirectoryWithinSite(GetDirectoryPath(), context.ContentRootPath);
 
         if (context.DryRun)
         {
@@ -20,6 +21,36 @@ public abstract class DirectorySanitiser : ISanitiser
     public abstract bool IsEnabled();
 
     protected abstract string GetDirectoryPath();
+
+    /// <summary>
+    /// Resolves the target directory and refuses to proceed unless it is strictly inside the site content
+    /// root, so a misconfigured path can never empty an arbitrary or system directory.
+    /// </summary>
+    private static string ResolveDirectoryWithinSite(string directory, string contentRootPath)
+    {
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            throw new InvalidOperationException(
+                "DirectorySanitiser: GetDirectoryPath() returned an empty path.");
+        }
+
+        if (string.IsNullOrWhiteSpace(contentRootPath))
+        {
+            throw new InvalidOperationException("DirectorySanitiser: the content root path is not available.");
+        }
+
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(contentRootPath));
+        var fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory, root));
+
+        if (fullPath.Equals(root, StringComparison.Ordinal)
+            || !fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"DirectorySanitiser: refusing to empty '{fullPath}' because it is not inside the site content root '{root}'.");
+        }
+
+        return fullPath;
+    }
 
     private static Task RemoveDirectoriesInDirectory(string? directory)
     {

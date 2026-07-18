@@ -193,6 +193,10 @@ public class MyCustomDirectorySanitiser : DirectorySanitiser
 }
 ```
 
+`GetDirectoryPath` may be relative (resolved against the site content root) or absolute, but as a safety guard
+the target must be a directory **strictly inside the site content root**. Returning an empty path, the content
+root itself, or a path outside the site (including via `..` traversal) throws rather than deleting anything.
+
 > [!WARNING]
 > N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging
 > environment. Before enabling please ensure you have a backup of your data and a backup of your backup.

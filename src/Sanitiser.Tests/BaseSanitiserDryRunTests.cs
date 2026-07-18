@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NPoco;
 using Umbraco.Community.Sanitiser.Persistence;
@@ -9,13 +10,16 @@ using Xunit;
 
 namespace Umbraco.Community.Sanitiser.Tests;
 
-public sealed class DirectorySanitiserDryRunTests : IDisposable
+public sealed class DirectorySanitiserTests : IDisposable
 {
+    private readonly string _contentRoot;
     private readonly string _dir;
 
-    public DirectorySanitiserDryRunTests()
+    public DirectorySanitiserTests()
     {
-        _dir = Path.Combine(Path.GetTempPath(), "sanitiser-test-" + Guid.NewGuid().ToString("N"));
+        // A content root containing the target directory, so the target is a valid "inside the site" path.
+        _contentRoot = Path.Combine(Path.GetTempPath(), "sanitiser-root-" + Guid.NewGuid().ToString("N"));
+        _dir = Path.Combine(_contentRoot, "media", "uploads");
         Directory.CreateDirectory(_dir);
         File.WriteAllText(Path.Combine(_dir, "secret.txt"), "pii");
         Directory.CreateDirectory(Path.Combine(_dir, "sub"));
@@ -23,9 +27,9 @@ public sealed class DirectorySanitiserDryRunTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_dir))
+        if (Directory.Exists(_contentRoot))
         {
-            Directory.Delete(_dir, true);
+            Directory.Delete(_contentRoot, true);
         }
     }
 
@@ -35,12 +39,15 @@ public sealed class DirectorySanitiserDryRunTests : IDisposable
         protected override string GetDirectoryPath() => path;
     }
 
+    private SanitisationContext Context(bool dryRun, ILogger? logger = null) =>
+        new(dryRun, logger ?? NullLogger.Instance, _contentRoot);
+
     [Fact]
     public async Task Dry_run_leaves_the_directory_untouched_and_logs_intent()
     {
         var logger = new ListLogger<DirectorySanitiser>();
 
-        await new TestDirectorySanitiser(_dir).Sanitise(new SanitisationContext(DryRun: true, logger));
+        await new TestDirectorySanitiser(_dir).Sanitise(Context(dryRun: true, logger));
 
         Assert.True(File.Exists(Path.Combine(_dir, "secret.txt")));
         Assert.True(Directory.Exists(Path.Combine(_dir, "sub")));
@@ -50,10 +57,40 @@ public sealed class DirectorySanitiserDryRunTests : IDisposable
     [Fact]
     public async Task A_real_run_empties_the_directory()
     {
-        await new TestDirectorySanitiser(_dir).Sanitise(new SanitisationContext(DryRun: false, NullLogger.Instance));
+        await new TestDirectorySanitiser(_dir).Sanitise(Context(dryRun: false));
 
         Assert.Empty(Directory.GetFiles(_dir));
         Assert.Empty(Directory.GetDirectories(_dir));
+    }
+
+    [Fact]
+    public async Task Refuses_to_empty_a_directory_outside_the_content_root()
+    {
+        var outside = Directory.GetParent(_contentRoot)!.FullName;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(outside).Sanitise(Context(dryRun: false)));
+    }
+
+    [Fact]
+    public async Task Refuses_to_empty_the_content_root_itself()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(_contentRoot).Sanitise(Context(dryRun: false)));
+    }
+
+    [Fact]
+    public async Task Refuses_an_empty_path()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(string.Empty).Sanitise(Context(dryRun: false)));
+    }
+
+    [Fact]
+    public async Task Refuses_a_path_that_escapes_the_content_root_via_traversal()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(Path.Combine("media", "..", "..")).Sanitise(Context(dryRun: false)));
     }
 }
 
