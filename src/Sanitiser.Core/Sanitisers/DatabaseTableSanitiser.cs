@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NPoco;
 using Umbraco.Community.Sanitiser.Persistence;
 
@@ -6,14 +7,7 @@ namespace Umbraco.Community.Sanitiser.sanitisers;
 
 public abstract class DatabaseTableSanitiser<T>(SanitiserDbContext dbContext) : ISanitiser where T : class
 {
-    public async Task Sanitise()
-    {
-        await EmptyTable();
-    }
-
-    public abstract bool IsEnabled();
-
-    private async Task EmptyTable()
+    public async Task Sanitise(SanitisationContext context)
     {
         var tableName = GetTableName();
         if (string.IsNullOrEmpty(tableName))
@@ -27,12 +21,20 @@ public abstract class DatabaseTableSanitiser<T>(SanitiserDbContext dbContext) : 
             throw new InvalidOperationException($"Invalid table name: {tableName}");
         }
 
+        if (context.DryRun)
+        {
+            context.Logger.LogInformation("[DRY RUN] Would empty database table [{tableName}].", tableName);
+            return;
+        }
+
         // Using ExecuteSqlRaw to truncate/delete from table
         // This is more efficient for emptying a whole table and doesn't require T to be mapped in DbContext
 #pragma warning disable EF1002
         await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{tableName}]");
 #pragma warning restore EF1002
     }
+
+    public abstract bool IsEnabled();
 
     private static bool IsValidTableName(string tableName)
     {

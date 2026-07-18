@@ -28,9 +28,11 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 - **Cache-cleanup drift detection.** If records were sanitised but the `umbracoCacheInstruction` table
   contains entries that none of the expected refresher patterns match, a warning is logged — surfacing the
   otherwise-silent case where Umbraco's cache-instruction format has changed and personal data could remain.
-- **Dry run.** A `Sanitiser:DryRun` option makes the built-in user and member sanitisers log the records they
-  would delete or anonymise without making any changes. Because it is read-only it is also permitted to run in
-  Production for a safe preview.
+- **Dry run.** A `Sanitiser:DryRun` option makes every sanitiser log the changes it would make without making
+  any. It is delivered to each sanitiser through the new `SanitisationContext` passed to `ISanitiser.Sanitise`,
+  so the built-in user/member sanitisers, the `DatabaseTableSanitiser`/`DirectorySanitiser` base classes, and
+  custom sanitisers all honour it. Because it is read-only it is also permitted to run in Production for a safe
+  preview.
 - **Pluggable replacement.** A new `IPersonalDataReplacer` abstraction generates replacement values.
   The default `TemplatePersonalDataReplacer` is driven by the new `Sanitiser:Replacement` config section.
   Register a custom replacer with `builder.SetPersonalDataReplacer<T>()`.
@@ -72,6 +74,8 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 
 ### Migration notes
 
+- **`ISanitiser.Sanitise` signature changed** from `Sanitise()` to `Sanitise(SanitisationContext context)`.
+  Custom `ISanitiser` implementations must update the signature and should honour `context.DryRun`.
 - **Replacement templates moved.** `EmailTemplate`, `NameTemplate`, and `UserNameTemplate` previously lived
   under `Sanitiser:UsersSanitiser`. They now live in the shared `Sanitiser:Replacement` section and apply to
   all sanitisers. Move any customised templates accordingly; the appsettings shape is otherwise unchanged.

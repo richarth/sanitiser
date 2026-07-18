@@ -13,7 +13,6 @@ namespace Umbraco.Community.Sanitiser.sanitisers;
 
 public class MembersSanitiser(
     IOptions<MembersSanitiserOptions> sanitiserOptions,
-    IOptions<SanitiserOptions> globalOptions,
     IPersonalDataReplacer personalDataReplacer,
     IMemberService memberService,
     SanitiserDbContext dbContext,
@@ -21,14 +20,13 @@ public class MembersSanitiser(
     : ISanitiser
 {
     private readonly MembersSanitiserOptions _sanitiserOptions = sanitiserOptions.Value;
-    private readonly bool _dryRun = globalOptions.Value.DryRun;
 
-    public async Task Sanitise()
+    public async Task Sanitise(SanitisationContext context)
     {
         // sanitise all members, then remove their cached data
-        var sanitisedCount = await SanitiseAllMembers();
+        var sanitisedCount = await SanitiseAllMembers(context.DryRun);
 
-        if (_dryRun)
+        if (context.DryRun)
         {
             logger.LogInformation("[DRY RUN] Would remove cached member data for the members listed above.");
             return;
@@ -42,7 +40,7 @@ public class MembersSanitiser(
         return _sanitiserOptions.Enable;
     }
 
-    private async Task<int> SanitiseAllMembers()
+    private async Task<int> SanitiseAllMembers(bool dryRun)
     {
         SanitisationMode mode = _sanitiserOptions.Mode;
 
@@ -66,7 +64,7 @@ public class MembersSanitiser(
                 continue;
             }
 
-            if (_dryRun)
+            if (dryRun)
             {
                 logger.LogInformation("[DRY RUN] Would {mode} member {memberId} ({email})", mode, member.Id, member.Email);
                 processedCount++;

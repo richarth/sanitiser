@@ -29,7 +29,7 @@ public class SanitizationServiceTests
         await Create(new SanitiserOptions { Enable = false }, Environments.Development)
             .Sanitise(Collection(sanitiser));
 
-        await sanitiser.DidNotReceive().Sanitise();
+        await sanitiser.DidNotReceive().Sanitise(Arg.Any<SanitisationContext>());
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class SanitizationServiceTests
         await Create(new SanitiserOptions { Enable = true, ProductionOverride = false }, Environments.Production)
             .Sanitise(Collection(sanitiser));
 
-        await sanitiser.DidNotReceive().Sanitise();
+        await sanitiser.DidNotReceive().Sanitise(Arg.Any<SanitisationContext>());
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class SanitizationServiceTests
         await Create(new SanitiserOptions { Enable = true, ProductionOverride = false, DryRun = true }, Environments.Production)
             .Sanitise(Collection(sanitiser));
 
-        await sanitiser.Received(1).Sanitise();
+        await sanitiser.Received(1).Sanitise(Arg.Any<SanitisationContext>());
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class SanitizationServiceTests
         await Create(new SanitiserOptions { Enable = true, ProductionOverride = true }, Environments.Production)
             .Sanitise(Collection(sanitiser));
 
-        await sanitiser.Received(1).Sanitise();
+        await sanitiser.Received(1).Sanitise(Arg.Any<SanitisationContext>());
     }
 
     [Fact]
@@ -75,21 +75,21 @@ public class SanitizationServiceTests
         await Create(new SanitiserOptions { Enable = true }, Environments.Development)
             .Sanitise(Collection(enabled, disabled));
 
-        await enabled.Received(1).Sanitise();
-        await disabled.DidNotReceive().Sanitise();
+        await enabled.Received(1).Sanitise(Arg.Any<SanitisationContext>());
+        await disabled.DidNotReceive().Sanitise(Arg.Any<SanitisationContext>());
     }
 
     [Fact]
     public async Task A_failing_sanitiser_does_not_stop_the_others()
     {
         var failing = EnabledSanitiser();
-        failing.Sanitise().Returns(Task.FromException(new InvalidOperationException("boom")));
+        failing.Sanitise(Arg.Any<SanitisationContext>()).Returns(Task.FromException(new InvalidOperationException("boom")));
         var ok = EnabledSanitiser();
 
         await Create(new SanitiserOptions { Enable = true }, Environments.Development)
             .Sanitise(Collection(failing, ok));
 
-        await ok.Received(1).Sanitise();
+        await ok.Received(1).Sanitise(Arg.Any<SanitisationContext>());
     }
 
     private static ISanitiser EnabledSanitiser()

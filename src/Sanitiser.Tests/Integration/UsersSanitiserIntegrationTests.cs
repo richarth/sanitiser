@@ -48,7 +48,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         IUser user = FakeUser(10, "Alice Real", "alice@real.com", "alice");
         IUserService userService = UserServiceReturning(SuperAdmin(), user);
 
-        await CreateSanitiser(userService, SanitisationMode.Anonymise).Sanitise();
+        await CreateSanitiser(userService, SanitisationMode.Anonymise).Sanitise(Context());
 
         userService.Received(1).Save(user);
         userService.DidNotReceive().Delete(Arg.Any<IUser>());
@@ -63,7 +63,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         IUser user = FakeUser(10, "Alice Real", "alice@real.com", "alice");
         IUserService userService = UserServiceReturning(SuperAdmin(), user);
 
-        await CreateSanitiser(userService, SanitisationMode.Delete).Sanitise();
+        await CreateSanitiser(userService, SanitisationMode.Delete).Sanitise(Context());
 
         userService.Received(1).Delete(user);
         userService.DidNotReceive().Save(Arg.Any<IUser>());
@@ -77,7 +77,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         IUser superAdmin = SuperAdmin();
         IUserService userService = UserServiceReturning(superAdmin);
 
-        await CreateSanitiser(userService, SanitisationMode.Delete).Sanitise();
+        await CreateSanitiser(userService, SanitisationMode.Delete).Sanitise(Context());
 
         userService.DidNotReceive().Delete(superAdmin);
         userService.DidNotReceive().Save(superAdmin);
@@ -91,7 +91,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         IUser normal = FakeUser(12, "Alice", "alice@real.com", "alice");
         IUserService userService = UserServiceReturning(SuperAdmin(), excluded, normal);
 
-        await CreateSanitiser(userService, SanitisationMode.Delete, domainsToExclude: "keep.com").Sanitise();
+        await CreateSanitiser(userService, SanitisationMode.Delete, domainsToExclude: "keep.com").Sanitise(Context());
 
         userService.DidNotReceive().Delete(excluded);
         userService.Received(1).Delete(normal);
@@ -107,7 +107,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
             Instruction(2, "[{\"RefresherId\":\"00000000-0000-0000-0000-000000000000\"}]"));
         await _dbContext.SaveChangesAsync();
 
-        await CreateSanitiser(UserServiceReturning(SuperAdmin()), SanitisationMode.Delete).Sanitise();
+        await CreateSanitiser(UserServiceReturning(SuperAdmin()), SanitisationMode.Delete).Sanitise(Context());
 
         var remaining = _dbContext.CacheInstructions.AsNoTracking().Select(x => x.Id).ToList();
         Assert.DoesNotContain(1, remaining);
@@ -124,7 +124,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         await _dbContext.SaveChangesAsync();
         var logger = new ListLogger<UsersSanitiser>();
 
-        await CreateSanitiser(userService, SanitisationMode.Delete, logger: logger, dryRun: true).Sanitise();
+        await CreateSanitiser(userService, SanitisationMode.Delete, logger: logger).Sanitise(Context(dryRun: true));
 
         // nothing modified: user untouched, no delete/save, cache instruction still present
         userService.DidNotReceive().Delete(Arg.Any<IUser>());
@@ -143,7 +143,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         var logger = new ListLogger<UsersSanitiser>();
 
         await CreateSanitiser(UserServiceReturning(FakeUser(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete, logger: logger).Sanitise();
+            SanitisationMode.Delete, logger: logger).Sanitise(Context());
 
         Assert.True(logger.HasWarningContaining("cache instruction"));
         Assert.Contains(1, _dbContext.CacheInstructions.AsNoTracking().Select(x => x.Id).ToList());
@@ -158,7 +158,7 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         var logger = new ListLogger<UsersSanitiser>();
 
         await CreateSanitiser(UserServiceReturning(FakeUser(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete, logger: logger).Sanitise();
+            SanitisationMode.Delete, logger: logger).Sanitise(Context());
 
         Assert.False(logger.HasWarningContaining("cache instruction"));
     }
@@ -169,13 +169,13 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
         var logger = new ListLogger<UsersSanitiser>();
 
         await CreateSanitiser(UserServiceReturning(FakeUser(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete, logger: logger).Sanitise();
+            SanitisationMode.Delete, logger: logger).Sanitise(Context());
 
         Assert.False(logger.HasWarningContaining("cache instruction"));
     }
 
     private UsersSanitiser CreateSanitiser(IUserService userService, SanitisationMode mode, string domainsToExclude = "",
-        ILogger<UsersSanitiser>? logger = null, bool dryRun = false)
+        ILogger<UsersSanitiser>? logger = null)
     {
         var options = Options.Create(new UsersSanitiserOptions
         {
@@ -183,10 +183,11 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
             Mode = mode,
             DomainsToExclude = domainsToExclude
         });
-        var globalOptions = Options.Create(new SanitiserOptions { Enable = true, DryRun = dryRun });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
-        return new UsersSanitiser(options, globalOptions, replacer, userService, _dbContext, logger ?? NullLogger<UsersSanitiser>.Instance);
+        return new UsersSanitiser(options, replacer, userService, _dbContext, logger ?? NullLogger<UsersSanitiser>.Instance);
     }
+
+    private static SanitisationContext Context(bool dryRun = false) => new(dryRun, NullLogger.Instance);
 
     private static IUserService UserServiceReturning(params IUser[] users)
     {

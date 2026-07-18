@@ -43,7 +43,7 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
         IMember member = FakeMember(10, "Alice Real", "alice@real.com", "alice");
         IMemberService memberService = MemberServiceReturning(member);
 
-        await CreateSanitiser(memberService, SanitisationMode.Anonymise).Sanitise();
+        await CreateSanitiser(memberService, SanitisationMode.Anonymise).Sanitise(Context());
 
         memberService.Received(1).Save(member);
         memberService.DidNotReceive().Delete(Arg.Any<IMember>());
@@ -58,7 +58,7 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
         IMember member = FakeMember(10, "Alice Real", "alice@real.com", "alice");
         IMemberService memberService = MemberServiceReturning(member);
 
-        await CreateSanitiser(memberService, SanitisationMode.Delete).Sanitise();
+        await CreateSanitiser(memberService, SanitisationMode.Delete).Sanitise(Context());
 
         memberService.Received(1).Delete(member);
         Assert.Equal("user0@example.com", member.Email);
@@ -72,7 +72,7 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
         IMember normal = FakeMember(12, "Alice", "alice@real.com", "alice");
         IMemberService memberService = MemberServiceReturning(excluded, normal);
 
-        await CreateSanitiser(memberService, SanitisationMode.Delete, domainsToExclude: "keep.com").Sanitise();
+        await CreateSanitiser(memberService, SanitisationMode.Delete, domainsToExclude: "keep.com").Sanitise(Context());
 
         memberService.DidNotReceive().Delete(excluded);
         memberService.Received(1).Delete(normal);
@@ -88,7 +88,7 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
             Instruction(2, "[{\"RefresherId\":\"00000000-0000-0000-0000-000000000000\"}]"));
         await _dbContext.SaveChangesAsync();
 
-        await CreateSanitiser(MemberServiceReturning(), SanitisationMode.Delete).Sanitise();
+        await CreateSanitiser(MemberServiceReturning(), SanitisationMode.Delete).Sanitise(Context());
 
         var remaining = _dbContext.CacheInstructions.AsNoTracking().Select(x => x.Id).ToList();
         Assert.DoesNotContain(1, remaining);
@@ -102,7 +102,7 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
         IMemberService memberService = MemberServiceReturning(member);
         var logger = new ListLogger<MembersSanitiser>();
 
-        await CreateSanitiser(memberService, SanitisationMode.Delete, logger: logger, dryRun: true).Sanitise();
+        await CreateSanitiser(memberService, SanitisationMode.Delete, logger: logger).Sanitise(Context(dryRun: true));
 
         memberService.DidNotReceive().Delete(Arg.Any<IMember>());
         memberService.DidNotReceive().Save(Arg.Any<IMember>());
@@ -118,14 +118,14 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
         var logger = new ListLogger<MembersSanitiser>();
 
         await CreateSanitiser(MemberServiceReturning(FakeMember(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete, logger: logger).Sanitise();
+            SanitisationMode.Delete, logger: logger).Sanitise(Context());
 
         Assert.True(logger.HasWarningContaining("cache instruction"));
         Assert.Contains(1, _dbContext.CacheInstructions.AsNoTracking().Select(x => x.Id).ToList());
     }
 
     private MembersSanitiser CreateSanitiser(IMemberService memberService, SanitisationMode mode, string domainsToExclude = "",
-        ILogger<MembersSanitiser>? logger = null, bool dryRun = false)
+        ILogger<MembersSanitiser>? logger = null)
     {
         var options = Options.Create(new MembersSanitiserOptions
         {
@@ -133,10 +133,11 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
             Mode = mode,
             DomainsToExclude = domainsToExclude
         });
-        var globalOptions = Options.Create(new SanitiserOptions { Enable = true, DryRun = dryRun });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
-        return new MembersSanitiser(options, globalOptions, replacer, memberService, _dbContext, logger ?? NullLogger<MembersSanitiser>.Instance);
+        return new MembersSanitiser(options, replacer, memberService, _dbContext, logger ?? NullLogger<MembersSanitiser>.Instance);
     }
+
+    private static SanitisationContext Context(bool dryRun = false) => new(dryRun, NullLogger.Instance);
 
     private static IMemberService MemberServiceReturning(params IMember[] members)
     {

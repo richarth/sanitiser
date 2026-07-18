@@ -62,9 +62,9 @@ Because a dry run makes no changes, it is also allowed to run in `Production` so
 Once you are happy with the logged output, set `DryRun` back to `false` to perform the sanitisation.
 
 > [!NOTE]
-> Dry run covers the built-in user and member sanitisers. Custom sanitisers (including `DatabaseTableSanitiser`
-> and `DirectorySanitiser` subclasses) only honour it if they inject `IOptions<SanitiserOptions>` and check
-> `DryRun` themselves.
+> Dry run is passed to every sanitiser via the `SanitisationContext`. The built-in user and member sanitisers
+> and the `DatabaseTableSanitiser`/`DirectorySanitiser` base classes all honour it; a custom `ISanitiser`
+> should check `context.DryRun` and make no changes when it is set.
 
 ### Member Data
 
@@ -225,7 +225,29 @@ without making changes:
 To add your own sanitization logic, implement the `ISanitiser` interface. Your sanitization logic will be run
 automatically on startup when the sanitization service and your sanitizer are enabled.
 
-Add your logic to the `Sanitise` method.
+Add your logic to the `Sanitise(SanitisationContext context)` method, and honour `context.DryRun` — when it is
+`true`, log what you would change but make no changes:
+
+```csharp
+using Umbraco.Community.Sanitiser.sanitisers;
+
+public class MySanitiser : ISanitiser
+{
+    public bool IsEnabled() => true;
+
+    public Task Sanitise(SanitisationContext context)
+    {
+        if (context.DryRun)
+        {
+            context.Logger.LogInformation("[DRY RUN] Would remove X");
+            return Task.CompletedTask;
+        }
+
+        // ... perform the removal ...
+        return Task.CompletedTask;
+    }
+}
+```
 
 You will also need to implement the enabled check in the `IsEnabled` method. You could check for a value in Umbraco,
 simply return true or more likely add a setting to `appsettings.json`.

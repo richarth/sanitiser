@@ -61,8 +61,9 @@ detection).
   `Sanitiser:UsersSanitiser`, `Sanitiser:AiReplacement`). Core owns only the top-level `SanitiserOptions`
   (`Enable`, `ProductionOverride`, `DryRun`).
 - Custom replacers register with `builder.SetPersonalDataReplacer<T>()`.
-- `DryRun` and the production guard are honoured only by the built-in user/member sanitisers; custom
-  sanitisers must inject `IOptions<SanitiserOptions>` and check `DryRun` themselves.
+- `SanitizationService` builds a `SanitisationContext` (carrying `DryRun` and a logger) and passes it to every
+  `ISanitiser.Sanitise(context)`. All built-in sanitisers and the base classes honour `context.DryRun`; a
+  custom `ISanitiser` should too.
 - `NuGetAuditMode=direct` (in `src/Directory.Build.props`): the flagged transitive vulnerabilities belong to
   Umbraco, not this library. Shared package metadata/version also live there; `NuGet.config` pins restore to
   nuget.org.

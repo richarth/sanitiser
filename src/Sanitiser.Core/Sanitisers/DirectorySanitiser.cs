@@ -1,10 +1,20 @@
+using Microsoft.Extensions.Logging;
+
 namespace Umbraco.Community.Sanitiser.sanitisers;
 
 public abstract class DirectorySanitiser : ISanitiser
 {
-    public async Task Sanitise()
+    public async Task Sanitise(SanitisationContext context)
     {
-        await EmptyDirectory(GetDirectoryPath());
+        var directory = GetDirectoryPath();
+
+        if (context.DryRun)
+        {
+            context.Logger.LogInformation("[DRY RUN] Would delete all files and subdirectories in {directory}.", directory);
+            return;
+        }
+
+        await EmptyDirectory(directory);
     }
 
     public abstract bool IsEnabled();

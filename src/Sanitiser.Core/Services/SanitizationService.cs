@@ -29,10 +29,11 @@ public class SanitizationService(
             if (_options.DryRun)
             {
                 logger.LogWarning(
-                    "Sanitisation is running in DRY RUN mode: no data will be modified. The built-in user and " +
-                    "member sanitisers will only log the records they would affect. Custom sanitisers only honour " +
-                    "dry run if they check SanitiserOptions.DryRun themselves.");
+                    "Sanitisation is running in DRY RUN mode: no data will be modified. Each sanitiser will only " +
+                    "log the changes it would make.");
             }
+
+            var context = new SanitisationContext(_options.DryRun, logger);
 
             logger.LogInformation("Sanitization started.");
 
@@ -45,7 +46,7 @@ public class SanitizationService(
                     try
                     {
                         logger.LogInformation("Running sanitiser: {sanitiserName}", sanitiserName);
-                        await sanitiser.Sanitise();
+                        await sanitiser.Sanitise(context);
                         logger.LogInformation("Finished running sanitiser: {sanitiserName}", sanitiserName);
                     }
                     catch (Exception ex)
