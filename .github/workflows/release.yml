@@ -5,6 +5,9 @@ on:
         tags:
             - "[0-9]+.[0-9]+.[0-9]+"
 
+permissions:
+    contents: write
+
 jobs:
     build:
 
@@ -18,13 +21,54 @@ jobs:
             -   name: Setup .NET
                 uses: actions/setup-dotnet@v4
                 with:
-                    dotnet-version: 8.0.x
+                    dotnet-version: |
+                        8.0.x
+                        9.0.x
+                        10.0.x
 
-            -   name: Build project
-                run: dotnet build src/Sanitiser/Sanitiser.csproj --configuration Release
+            -   name: Extract changelog notes for this release
+                id: changelog
+                run: |
+                    VERSION="${GITHUB_REF_NAME}"
+                    NOTES=$(awk -v ver="$VERSION" '
+                        $0 ~ "^## \\[" ver "\\]" { flag=1; next }
+                        flag && /^## \[/ { flag=0 }
+                        flag { print }
+                    ' CHANGELOG.md)
+                    if [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
+                        echo "::error::No CHANGELOG.md section found for version $VERSION. Add a '## [$VERSION]' entry before tagging."
+                        exit 1
+                    fi
+                    echo "$NOTES" > release-notes.md
+                    echo "Extracted release notes for $VERSION:"
+                    cat release-notes.md
 
-            -   name: Package project
-                run: dotnet pack src/Sanitiser/Sanitiser.csproj --configuration Release
+            -   name: Build packages
+                run: |
+                    dotnet build src/Sanitiser.Core/Sanitiser.Core.csproj --configuration Release
+                    dotnet build src/Sanitiser.Users/Sanitiser.Users.csproj --configuration Release
+                    dotnet build src/Sanitiser.Members/Sanitiser.Members.csproj --configuration Release
+                    dotnet build src/Sanitiser.Faker/Sanitiser.Faker.csproj --configuration Release
+                    dotnet build src/Sanitiser.AI/Sanitiser.AI.csproj --configuration Release
+                    dotnet build src/Sanitiser/Sanitiser.csproj --configuration Release
+
+            -   name: Package projects
+                run: |
+                    dotnet pack src/Sanitiser.Core/Sanitiser.Core.csproj --configuration Release
+                    dotnet pack src/Sanitiser.Users/Sanitiser.Users.csproj --configuration Release
+                    dotnet pack src/Sanitiser.Members/Sanitiser.Members.csproj --configuration Release
+                    dotnet pack src/Sanitiser.Faker/Sanitiser.Faker.csproj --configuration Release
+                    dotnet pack src/Sanitiser.AI/Sanitiser.AI.csproj --configuration Release
+                    dotnet pack src/Sanitiser/Sanitiser.csproj --configuration Release
+
+            -   name: Create GitHub release
+                env:
+                    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run: |
+                    gh release create "${GITHUB_REF_NAME}" \
+                        --title "${GITHUB_REF_NAME}" \
+                        --notes-file release-notes.md \
+                        $(find . -path '*/bin/Release/*.nupkg')
 
             -   name: Push to NuGet
-                run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+                run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
