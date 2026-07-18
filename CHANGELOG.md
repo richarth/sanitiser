@@ -48,6 +48,9 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   mode, that the Super Admin and excluded domains are untouched, and that the EF Core cache-instruction
   cleanup removes only the matching rows.
 - `build.yml` CI workflow that builds all target frameworks and runs the tests on push and pull request.
+- Playwright end-to-end smoke tests (`e2e/`) that boot the real V17 test site and verify the backoffice is
+  served and that sanitisation runs during startup — proving the packages are safe to install in a real
+  Umbraco site.
 - A `SECURITY.md` describing how to report vulnerabilities, and README guidance on how the ASP.NET Core
   environment affects whether sanitisation runs (only `Production` is protected).
 

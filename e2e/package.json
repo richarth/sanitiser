@@ -1,0 +1,13 @@
+{
+  "name": "sanitiser-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end smoke tests that boot a real Umbraco site with the Sanitiser packages installed.",
+  "scripts": {
+    "test": "playwright test",
+    "install-browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
