@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bogus" Version="[35.6.5,36)" />
+    <PackageReference Include="Bogus" />
     <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
   </ItemGroup>
 

@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <!-- Spans the Umbraco 17.x and 18.x Umbraco.AI lines; the chat API is identical across both. -->
-    <PackageReference Include="Umbraco.AI.Core" Version="[17.1.1,19)" />
+    <PackageReference Include="Umbraco.AI.Core" />
     <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
   </ItemGroup>
 

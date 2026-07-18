@@ -12,21 +12,12 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <!-- Versions are centralised in ../Directory.Packages.props. Umbraco.Cms.Persistence.EFCore is versioned
+       per target framework there, transitively providing Umbraco.Cms.Core/Infrastructure and the EF Core
+       providers for the matching major. -->
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-  </ItemGroup>
-
-  <!-- Umbraco 13 for .NET 8 sites, Umbraco 15/16 for .NET 9 sites, Umbraco 17/18 for .NET 10 sites.
-       Persistence.EFCore transitively provides Umbraco.Cms.Core, Infrastructure,
-       and the EF Core SqlServer/Sqlite providers for the matching EF Core major. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Umbraco.Cms.Persistence.EFCore" Version="[13.0.0,14)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <PackageReference Include="Umbraco.Cms.Persistence.EFCore" Version="[15.0.0,17)" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-    <PackageReference Include="Umbraco.Cms.Persistence.EFCore" Version="[17.0.0,19)" />
+    <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="Umbraco.Cms.Persistence.EFCore" />
   </ItemGroup>
 
   <ItemGroup>
