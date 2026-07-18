@@ -49,10 +49,19 @@ public class UsersSanitiser(
 
         var domainsToExclude = _sanitiserOptions.DomainsToExclude;
 
-        // Get all users in one go to avoid pagination issues during deletion
-        var allUsers = userService.GetAll(0, int.MaxValue, out _)
+        // Load in one page (bounded by MaxRecords) to avoid pagination issues while deleting.
+        var pageSize = _sanitiserOptions.MaxRecords > 0 ? _sanitiserOptions.MaxRecords : int.MaxValue;
+        var allUsers = userService.GetAll(0, pageSize, out var totalRecords)
             .Where(user => user.Id != -1) // Don't remove Super Admin
             .ToList();
+
+        if (_sanitiserOptions.MaxRecords > 0 && totalRecords > _sanitiserOptions.MaxRecords)
+        {
+            logger.LogWarning(
+                "There are {totalRecords} users but MaxRecords is {maxRecords}; only the first {maxRecords} " +
+                "will be processed this run. Increase MaxRecords, or (in Delete mode) run again to continue.",
+                totalRecords, _sanitiserOptions.MaxRecords, _sanitiserOptions.MaxRecords);
+        }
 
         logger.LogInformation("Found {totalUsers} users to process", allUsers.Count);
 

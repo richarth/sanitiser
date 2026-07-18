@@ -35,6 +35,9 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   the service, `SanitisationContext`, sanitisers and `IPersonalDataReplacer`, so a long run is cancelled on
   shutdown. The AI replacer additionally bounds each call with `AiReplacement:TimeoutSeconds` (default 30) and
   falls back to templated values on timeout, so a slow or hung model can't block application startup.
+- **`MaxRecords` cap.** The user and member sanitisers gained a `MaxRecords` option (default 0 = unlimited)
+  that bounds how many records are loaded per run on very large sites; when exceeded, the first `MaxRecords`
+  are processed and a warning is logged.
 - **Dry run.** A `Sanitiser:DryRun` option makes every sanitiser log the changes it would make without making
   any. It is delivered to each sanitiser through the new `SanitisationContext` passed to `ISanitiser.Sanitise`,
   so the built-in user/member sanitisers, the `DatabaseTableSanitiser`/`DirectorySanitiser` base classes, and

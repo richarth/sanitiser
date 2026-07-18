@@ -115,6 +115,31 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task Caps_processing_and_warns_when_more_records_than_MaxRecords()
+    {
+        IUser[] users =
+        [
+            FakeUser(1, "A", "a@real.com", "a"),
+            FakeUser(2, "B", "b@real.com", "b"),
+            FakeUser(3, "C", "c@real.com", "c")
+        ];
+        var service = Substitute.For<IUserService>();
+        long total;
+        service.GetAll(0L, 0, out total).ReturnsForAnyArgs(callInfo =>
+        {
+            var pageSize = (int)callInfo[1];
+            callInfo[2] = (long)users.Length;
+            return users.Take(pageSize);
+        });
+        var logger = new ListLogger<UsersSanitiser>();
+
+        await CreateSanitiser(service, SanitisationMode.Delete, logger: logger, maxRecords: 2).Sanitise(Context());
+
+        service.Received(2).Delete(Arg.Any<IUser>());
+        Assert.True(logger.HasWarningContaining("MaxRecords"));
+    }
+
+    [Fact]
     public async Task Dry_run_makes_no_changes_but_reports_what_it_would_do()
     {
         IUser user = FakeUser(10, "Alice Real", "alice@real.com", "alice");
@@ -175,13 +200,14 @@ public sealed class UsersSanitiserIntegrationTests : IDisposable
     }
 
     private UsersSanitiser CreateSanitiser(IUserService userService, SanitisationMode mode, string domainsToExclude = "",
-        ILogger<UsersSanitiser>? logger = null)
+        ILogger<UsersSanitiser>? logger = null, int maxRecords = 0)
     {
         var options = Options.Create(new UsersSanitiserOptions
         {
             Enable = true,
             Mode = mode,
-            DomainsToExclude = domainsToExclude
+            DomainsToExclude = domainsToExclude,
+            MaxRecords = maxRecords
         });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
         return new UsersSanitiser(options, replacer, userService, _dbContext, logger ?? NullLogger<UsersSanitiser>.Instance);
