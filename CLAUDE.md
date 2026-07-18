@@ -72,9 +72,10 @@ detection).
 
 ## Test sites and CI
 
-`Sanitiser.TestSite.V13` (net8/Umbraco 13), `Sanitiser.TestSite.V17` (net10/Umbraco 17) and
-`Sanitiser.TestSite.V18` (net10/Umbraco 18) are manual harnesses using unattended install + SQLite; their
-`umbraco/` runtime artifacts (database, logs) are not committed. V17 exercises Faker + Anonymise mode; V18
-exercises the default template replacer + Delete mode. `build.yml` builds all TFMs and runs the
-unit/integration tests on push and PR. `e2e.yml` runs the Playwright smoke tests manually or nightly (kept off
-the push/PR path deliberately).
+There is a test site per supported Umbraco major: `Sanitiser.TestSite.V13` (net8/Umbraco 13),
+`.V16` (net9/Umbraco 16), `.V17` (net10/Umbraco 17) and `.V18` (net10/Umbraco 18). They are manual harnesses
+using unattended install + SQLite; their `umbraco/` runtime artifacts (database, logs) are not committed. V17
+exercises Faker + Anonymise mode; the others use the default template replacer. `build.yml` builds the whole
+solution (so every test site and TFM compiles) and runs the unit/integration tests on push and PR. `e2e.yml`
+runs the Playwright smoke tests as a matrix over every test site, manually or nightly (kept off the push/PR
+path deliberately); the target site is chosen via the `SITE_PROJECT` env var read by `e2e/playwright.config.ts`.

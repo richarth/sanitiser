@@ -1,8 +1,12 @@
 import { defineConfig } from '@playwright/test';
+import { resolve } from 'path';
 
-// The V17 test site references the Sanitiser strategy + Faker packages and has sanitisation enabled, so
-// booting it exercises the real package in a real Umbraco 17 site.
-const port = 5199;
+// Which test site to boot. Repo-root-relative path; override via SITE_PROJECT to target another Umbraco
+// version. Each test site references the Sanitiser package with sanitisation enabled, so booting it
+// exercises the real package in a real Umbraco site.
+const siteProject = process.env.SITE_PROJECT ?? 'src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj';
+const projectPath = resolve(process.cwd(), '..', siteProject);
+const port = Number(process.env.SITE_PORT ?? 5199);
 const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
@@ -19,8 +23,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command:
-      'dotnet run --project ../src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj --no-launch-profile -c Release',
+    command: `dotnet run --project "${projectPath}" --no-launch-profile -c Release`,
     url: `${baseURL}/umbraco`,
     reuseExistingServer: !process.env.CI,
     // Umbraco's first-run unattended install can take a while.

@@ -1,7 +1,7 @@
 name: E2E
 
-# Deliberately NOT triggered on push or pull_request: the end-to-end run boots a real Umbraco site and takes
-# minutes, so it is kept off the standard CI path. Run it on demand or nightly instead.
+# Deliberately NOT triggered on push or pull_request: each run boots a real Umbraco site and takes minutes, so
+# it is kept off the standard CI path. Run it on demand or nightly instead.
 on:
     workflow_dispatch:
     schedule:
@@ -14,6 +14,24 @@ jobs:
     e2e:
         runs-on: ubuntu-latest
 
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    -   umbraco: "13"
+                        project: "src/Sanitiser.TestSite.V13/Sanitiser.TestSite.v13.csproj"
+                    -   umbraco: "16"
+                        project: "src/Sanitiser.TestSite.V16/Sanitiser.TestSite.v16.csproj"
+                    -   umbraco: "17"
+                        project: "src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj"
+                    -   umbraco: "18"
+                        project: "src/Sanitiser.TestSite.V18/Sanitiser.TestSite.v18.csproj"
+
+        name: E2E (Umbraco ${{ matrix.umbraco }})
+
+        env:
+            SITE_PROJECT: ${{ matrix.project }}
+
         steps:
 
             -   name: Checkout repository
@@ -22,7 +40,10 @@ jobs:
             -   name: Setup .NET
                 uses: actions/setup-dotnet@v4
                 with:
-                    dotnet-version: 10.0.x
+                    dotnet-version: |
+                        8.0.x
+                        9.0.x
+                        10.0.x
 
             -   name: Setup Node
                 uses: actions/setup-node@v4
@@ -33,8 +54,8 @@ jobs:
 
             # Build the test site up front so the Playwright web server launches it quickly rather than
             # spending the readiness timeout compiling.
-            -   name: Build the V17 test site
-                run: dotnet build src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj --configuration Release
+            -   name: Build the test site
+                run: dotnet build "${{ matrix.project }}" --configuration Release
 
             -   name: Install Playwright and browser
                 working-directory: e2e
@@ -50,9 +71,9 @@ jobs:
                 if: failure()
                 uses: actions/upload-artifact@v4
                 with:
-                    name: e2e-diagnostics
+                    name: e2e-diagnostics-umbraco-${{ matrix.umbraco }}
                     path: |
                         e2e/playwright-report/
                         e2e/test-results/
-                        src/Sanitiser.TestSite.V17/umbraco/Logs/
+                        src/Sanitiser.TestSite.V*/umbraco/Logs/
                     retention-days: 7

@@ -1,11 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
-import { join } from 'path';
+import { dirname, join, resolve } from 'path';
 
-// These tests boot the real V17 test site (via the webServer in playwright.config.ts) with the Sanitiser
-// packages installed and sanitisation enabled. If the package threw during startup the site would fail to
-// boot and the backoffice would not be served, so a green run proves the package is safe to install in a
-// real Umbraco 17 site. Data-removal correctness is covered by the integration tests in Sanitiser.Tests.
+// These tests boot the test site chosen by SITE_PROJECT (via the webServer in playwright.config.ts) with the
+// Sanitiser package installed and sanitisation enabled. If the package threw during startup the site would
+// fail to boot and the backoffice would not be served, so a green run proves the package is safe to install
+// in a real Umbraco site of that version. Data-removal correctness is covered by the integration tests in
+// Sanitiser.Tests.
+
+const siteProject = process.env.SITE_PROJECT ?? 'src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj';
+const logsDir = resolve(process.cwd(), '..', dirname(siteProject), 'umbraco', 'Logs');
 
 test('the backoffice endpoint is served', async ({ request }) => {
   const response = await request.get('/umbraco');
@@ -18,7 +22,6 @@ test('the backoffice renders in the browser', async ({ page }) => {
 });
 
 test('sanitisation ran during startup', () => {
-  const logsDir = join(process.cwd(), '..', 'src', 'Sanitiser.TestSite.V17', 'umbraco', 'Logs');
   expect(existsSync(logsDir), `expected Umbraco logs at ${logsDir}`).toBeTruthy();
 
   // Select by modification time: log file names carry the machine name, so an alphabetical sort is unreliable

@@ -24,6 +24,15 @@ Playwright starts the test site itself (see `webServer` in `playwright.config.ts
 `http://localhost:5199`, waits for the backoffice to respond, runs the tests, then shuts it down. The first
 run performs Umbraco's unattended install, which can take a couple of minutes.
 
+By default it boots the Umbraco 17 site. To target another supported version, set `SITE_PROJECT` (a
+repo-root-relative path to the test site `.csproj`):
+
+```bash
+SITE_PROJECT=src/Sanitiser.TestSite.V18/Sanitiser.TestSite.v18.csproj npm test
+```
+
+The `e2e.yml` workflow runs this as a matrix over every test site (Umbraco 13, 16, 17 and 18).
+
 ## Notes
 
 - The test site runs in the `Development` environment so sanitisation is not skipped by the production guard.
