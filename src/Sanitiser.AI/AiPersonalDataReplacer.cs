@@ -21,11 +21,11 @@ public class AiPersonalDataReplacer(
     // queue is safe.
     private readonly Queue<PersonalData> _buffer = new();
 
-    public async Task<PersonalData> Replace(PersonalData original, int index)
+    public async Task<PersonalData> Replace(PersonalData original, int index, CancellationToken cancellationToken = default)
     {
         if (_buffer.Count == 0)
         {
-            await FillBufferAsync();
+            await FillBufferAsync(cancellationToken);
         }
 
         // Apply a deterministic per-record suffix so the email and username are always unique regardless of
@@ -35,7 +35,7 @@ public class AiPersonalDataReplacer(
             : Fallback(index);
     }
 
-    private async Task FillBufferAsync()
+    private async Task FillBufferAsync(CancellationToken cancellationToken)
     {
         var batchSize = Math.Max(1, _options.BatchSize);
 
@@ -49,9 +49,13 @@ public class AiPersonalDataReplacer(
             new(ChatRole.User, $"Generate {batchSize} distinct fictional people as a JSON array.")
         };
 
+        // Bound the call so a slow or hung model cannot block startup, while still honouring host shutdown.
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, _options.TimeoutSeconds)));
+
         try
         {
-            ChatResponse response = await chatService.GetChatResponseAsync(Configure, messages);
+            ChatResponse response = await chatService.GetChatResponseAsync(Configure, messages, timeoutCts.Token);
 
             List<PersonalData> people = ParseArray(response.Text);
             if (people.Count == 0 && ParseObject(response.Text) is { } single)
@@ -69,9 +73,14 @@ public class AiPersonalDataReplacer(
                 logger.LogWarning("AI replacement response could not be parsed; falling back to templated values.");
             }
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Host shutdown, not our timeout: propagate so the run stops.
+            throw;
+        }
         catch (Exception ex)
         {
-            logger.LogError(ex, "AI replacement request failed; falling back to templated values.");
+            logger.LogError(ex, "AI replacement request failed or timed out; falling back to templated values.");
         }
     }
 

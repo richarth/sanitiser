@@ -8,5 +8,5 @@ namespace Umbraco.Community.Sanitiser.Replacement;
 /// </summary>
 public interface IPersonalDataReplacer
 {
-    public Task<PersonalData> Replace(PersonalData original, int index);
+    public Task<PersonalData> Replace(PersonalData original, int index, CancellationToken cancellationToken = default);
 }

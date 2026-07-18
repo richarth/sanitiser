@@ -320,15 +320,17 @@ takes over replacement for all sanitisers automatically — no configuration req
       "Sanitiser": {
           "AiReplacement": {
               "ProfileAlias": "sanitiser",
-              "BatchSize": 20
+              "BatchSize": 20,
+              "TimeoutSeconds": 30
           }
       }
   }
   ```
 
-  Each record's email and username are made unique regardless of what the model returns. If a call fails or
-  can't be parsed, affected records fall back to templated values so a run is never blocked. AI replacement
-  still calls a model (once per batch), so it is slower and may incur cost.
+  Each record's email and username are made unique regardless of what the model returns. If a call fails, can't
+  be parsed, or exceeds `TimeoutSeconds`, affected records fall back to templated values so a run is never
+  blocked — a slow or hung model can't stall application startup. AI replacement still calls a model (once per
+  batch), so it is slower and may incur cost.
 
 ### Custom personal data replacer
 

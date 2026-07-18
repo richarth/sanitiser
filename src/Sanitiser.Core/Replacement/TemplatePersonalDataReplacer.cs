@@ -7,7 +7,7 @@ public class TemplatePersonalDataReplacer(IOptions<TemplateReplacementOptions> o
 {
     private readonly TemplateReplacementOptions _options = options.Value;
 
-    public Task<PersonalData> Replace(PersonalData original, int index)
+    public Task<PersonalData> Replace(PersonalData original, int index, CancellationToken cancellationToken = default)
     {
         var indexValue = index.ToString();
 

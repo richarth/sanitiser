@@ -24,7 +24,7 @@ public class MembersSanitiser(
     public async Task Sanitise(SanitisationContext context)
     {
         // sanitise all members, then remove their cached data
-        var sanitisedCount = await SanitiseAllMembers(context.DryRun);
+        var sanitisedCount = await SanitiseAllMembers(context.DryRun, context.CancellationToken);
 
         if (context.DryRun)
         {
@@ -32,7 +32,7 @@ public class MembersSanitiser(
             return;
         }
 
-        await RemoveCachedMemberData(sanitisedCount);
+        await RemoveCachedMemberData(sanitisedCount, context.CancellationToken);
     }
 
     public bool IsEnabled()
@@ -40,7 +40,7 @@ public class MembersSanitiser(
         return _sanitiserOptions.Enable;
     }
 
-    private async Task<int> SanitiseAllMembers(bool dryRun)
+    private async Task<int> SanitiseAllMembers(bool dryRun, CancellationToken cancellationToken)
     {
         SanitisationMode mode = _sanitiserOptions.Mode;
 
@@ -58,6 +58,8 @@ public class MembersSanitiser(
 
         foreach (IMember member in allMembers)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (EmailHelper.IsEmailDomainExcluded(member.Email, domainsToExclude))
             {
                 logger.LogInformation("Skipping member {memberId} - domain excluded", member.Id);
@@ -76,7 +78,7 @@ public class MembersSanitiser(
                 // replace personal data even when deleting, so values lingering in audit
                 // and log tables after deletion are scrubbed too
                 PersonalData replacement = await personalDataReplacer.Replace(
-                    new PersonalData(member.Name, member.Email, member.Username), processedCount);
+                    new PersonalData(member.Name, member.Email, member.Username), processedCount, cancellationToken);
 
                 member.Email = replacement.Email ?? string.Empty;
                 member.Name = replacement.Name;
@@ -95,6 +97,10 @@ public class MembersSanitiser(
 
                 processedCount++;
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to sanitise member: {memberId}", member.Id);
@@ -106,7 +112,7 @@ public class MembersSanitiser(
         return processedCount;
     }
 
-    private async Task RemoveCachedMemberData(int sanitisedCount)
+    private async Task RemoveCachedMemberData(int sanitisedCount, CancellationToken cancellationToken)
     {
         logger.LogInformation("Removing cached member data...");
 
@@ -118,15 +124,15 @@ public class MembersSanitiser(
 
             var instructionsToRemove = await dbContext.CacheInstructions
                 .Where(x => EF.Functions.Like(x.Instructions, searchString))
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             if (instructionsToRemove.Count > 0)
             {
                 dbContext.CacheInstructions.RemoveRange(instructionsToRemove);
-                await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync(cancellationToken);
                 logger.LogInformation("Removed {count} cached member instructions.", instructionsToRemove.Count);
             }
-            else if (sanitisedCount > 0 && await dbContext.CacheInstructions.AnyAsync())
+            else if (sanitisedCount > 0 && await dbContext.CacheInstructions.AnyAsync(cancellationToken))
             {
                 // We sanitised members and the cache instruction table has entries, yet none matched the
                 // expected refresher format. This usually means the umbracoCacheInstruction JSON format has
@@ -137,6 +143,10 @@ public class MembersSanitiser(
                     "personal data remains in that table.",
                     sanitisedCount);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

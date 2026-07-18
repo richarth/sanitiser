@@ -92,6 +92,20 @@ public class SanitizationServiceTests
         await ok.Received(1).Sanitise(Arg.Any<SanitisationContext>());
     }
 
+    [Fact]
+    public async Task Propagates_cancellation_and_does_not_run_sanitisers()
+    {
+        var sanitiser = EnabledSanitiser();
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            Create(new SanitiserOptions { Enable = true }, Environments.Development)
+                .Sanitise(Collection(sanitiser), cts.Token));
+
+        await sanitiser.DidNotReceive().Sanitise(Arg.Any<SanitisationContext>());
+    }
+
     private static ISanitiser EnabledSanitiser()
     {
         var sanitiser = Substitute.For<ISanitiser>();

@@ -14,7 +14,7 @@ public class SanitizationService(
 {
     private readonly SanitiserOptions _options = options.Value;
 
-    public async Task Sanitise(SanitisersCollection sanitisers)
+    public async Task Sanitise(SanitisersCollection sanitisers, CancellationToken cancellationToken = default)
     {
         // if the sanitization service is enabled, then run any sanitizers found
         if (IsEnabled())
@@ -33,12 +33,14 @@ public class SanitizationService(
                     "log the changes it would make.");
             }
 
-            var context = new SanitisationContext(_options.DryRun, logger, hostEnvironment.ContentRootPath);
+            var context = new SanitisationContext(_options.DryRun, logger, hostEnvironment.ContentRootPath, cancellationToken);
 
             logger.LogInformation("Sanitization started.");
 
             foreach (ISanitiser sanitiser in sanitisers)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // only run enabled sanitizers
                 if (sanitiser.IsEnabled())
                 {
@@ -48,6 +50,11 @@ public class SanitizationService(
                         logger.LogInformation("Running sanitiser: {sanitiserName}", sanitiserName);
                         await sanitiser.Sanitise(context);
                         logger.LogInformation("Finished running sanitiser: {sanitiserName}", sanitiserName);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // The host is shutting down; stop rather than logging and continuing.
+                        throw;
                     }
                     catch (Exception ex)
                     {

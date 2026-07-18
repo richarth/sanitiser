@@ -16,4 +16,10 @@ public class AiReplacementOptions
     /// a batch risks the model truncating the JSON. Minimum 1 (one call per record).
     /// </summary>
     public int BatchSize { get; [UsedImplicitly] init; } = 20;
+
+    /// <summary>
+    /// Maximum seconds to wait for a single AI generation before falling back to templated values, so a slow
+    /// or hung model cannot block application startup. Minimum 1.
+    /// </summary>
+    public int TimeoutSeconds { get; [UsedImplicitly] init; } = 30;
 }

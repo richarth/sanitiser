@@ -87,6 +87,32 @@ public class AiPersonalDataReplacerTests
         Assert.Equal("user9@example.com", result.Email);
     }
 
+    [Fact]
+    public async Task Replace_falls_back_when_the_ai_call_times_out()
+    {
+        var chat = Substitute.For<IAIChatService>();
+        chat.GetChatResponseAsync(Arg.Any<Action<AIChatBuilder>>(), Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ChatResponse>(new OperationCanceledException()));
+
+        // No external cancellation, so a cancelled call is treated as the timeout: fall back.
+        PersonalData result = await CreateReplacer(chat).Replace(new PersonalData(null, null, null), 7);
+
+        Assert.Equal("user7@example.com", result.Email);
+    }
+
+    [Fact]
+    public async Task Replace_propagates_cancellation_when_the_host_is_shutting_down()
+    {
+        var chat = Substitute.For<IAIChatService>();
+        chat.GetChatResponseAsync(Arg.Any<Action<AIChatBuilder>>(), Arg.Any<IEnumerable<ChatMessage>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ChatResponse>(new OperationCanceledException()));
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => CreateReplacer(chat).Replace(new PersonalData(null, null, null), 9, cts.Token));
+    }
+
     private static AiPersonalDataReplacer ReplacerFor(string responseText) => CreateReplacer(ChatReturning(responseText));
 
     private static IAIChatService ChatReturning(string responseText)

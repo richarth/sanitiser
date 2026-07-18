@@ -31,6 +31,10 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 - **`DirectorySanitiser` safety guard.** The target directory must resolve to a location strictly inside the
   site content root; an empty path, the content root itself, or a path outside the site (including via `..`)
   now throws instead of deleting anything.
+- **Cancellation and AI timeout.** The host's cancellation token now flows from the startup handler through
+  the service, `SanitisationContext`, sanitisers and `IPersonalDataReplacer`, so a long run is cancelled on
+  shutdown. The AI replacer additionally bounds each call with `AiReplacement:TimeoutSeconds` (default 30) and
+  falls back to templated values on timeout, so a slow or hung model can't block application startup.
 - **Dry run.** A `Sanitiser:DryRun` option makes every sanitiser log the changes it would make without making
   any. It is delivered to each sanitiser through the new `SanitisationContext` passed to `ISanitiser.Sanitise`,
   so the built-in user/member sanitisers, the `DatabaseTableSanitiser`/`DirectorySanitiser` base classes, and
@@ -78,7 +82,10 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 ### Migration notes
 
 - **`ISanitiser.Sanitise` signature changed** from `Sanitise()` to `Sanitise(SanitisationContext context)`.
-  Custom `ISanitiser` implementations must update the signature and should honour `context.DryRun`.
+  Custom `ISanitiser` implementations must update the signature and should honour `context.DryRun` and
+  `context.CancellationToken`.
+- **`IPersonalDataReplacer.Replace` gained a `CancellationToken` parameter.** Custom replacer implementations
+  must add the parameter (callers can omit it — it defaults).
 - **Replacement templates moved.** `EmailTemplate`, `NameTemplate`, and `UserNameTemplate` previously lived
   under `Sanitiser:UsersSanitiser`. They now live in the shared `Sanitiser:Replacement` section and apply to
   all sanitisers. Move any customised templates accordingly; the appsettings shape is otherwise unchanged.

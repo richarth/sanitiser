@@ -9,7 +9,7 @@ public class FakerPersonalDataReplacer : IPersonalDataReplacer
     // so a single (non-thread-safe) Faker instance is fine.
     private readonly Faker _faker = new();
 
-    public Task<PersonalData> Replace(PersonalData original, int index)
+    public Task<PersonalData> Replace(PersonalData original, int index, CancellationToken cancellationToken = default)
     {
         var firstName = _faker.Name.FirstName();
         var lastName = _faker.Name.LastName();

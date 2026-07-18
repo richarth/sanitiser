@@ -12,6 +12,6 @@ public class SanitizationStartupNotification(
 {
     public async Task HandleAsync(UmbracoApplicationStartingNotification notification, CancellationToken cancellationToken)
     {
-        await sanitizationService.Sanitise(sanitisers);
+        await sanitizationService.Sanitise(sanitisers, cancellationToken);
     }
 }
