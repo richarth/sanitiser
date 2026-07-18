@@ -4,16 +4,15 @@
     <Product>Umbraco.Community.Sanitiser</Product>
     <PackageId>Umbraco.Community.Sanitiser</PackageId>
     <Title>Sanitiser</Title>
-    <Description>When enabled, this package will automatically remove personal data from your Umbraco website on startup. Meta-package that installs all Sanitiser strategy packages.</Description>
+    <Description>When enabled, this package automatically removes or anonymises personal data (users and members) from your Umbraco website on startup.</Description>
+    <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
+    <AssemblyName>Umbraco.Community.Sanitiser</AssemblyName>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <!-- Meta-package: no assembly, only dependencies on the strategy packages -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sanitiser.Users\Sanitiser.Users.csproj" />
-    <ProjectReference Include="..\Sanitiser.Members\Sanitiser.Members.csproj" />
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+    <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
   </ItemGroup>
 
 </Project>

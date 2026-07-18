@@ -24,11 +24,11 @@ environments). It is a family of NuGet packages under `src/`:
   `SanitisersCollection(Builder)`, `SanitiserComposer`, `SanitiserOptions`, `SanitiserDbContext`, the
   `IPersonalDataReplacer` abstraction + template implementation, and the `DatabaseTableSanitiser` /
   `DirectorySanitiser` abstract base classes.
-- **Sanitiser.Users / Sanitiser.Members** — the built-in strategies; each binds its own config sub-section and
-  depends on Core.
-- **Sanitiser** — a dependency-only meta-package installing Core + Users + Members.
-- **Sanitiser.Faker / Sanitiser.AI** — optional replacer packages (Bogus / Umbraco AI). Opt-in, excluded from
-  the meta-package. Only one replacer can be active at a time.
+- **Sanitiser** (`src/Sanitiser`, package `Umbraco.Community.Sanitiser`) — the main package: contains the
+  built-in User and Member sanitisers (+ their options and composers) and depends on Core. This is what most
+  sites install.
+- **Sanitiser.Faker / Sanitiser.AI** — optional replacer packages (Bogus / Umbraco AI) that depend on Core.
+  Opt-in. Only one replacer can be active at a time.
 
 ### Multi-targeting (important)
 

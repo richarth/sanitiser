@@ -13,18 +13,15 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 ### Added
 
 - **Package family.** The project is now split into:
+  - `Umbraco.Community.Sanitiser` — the main package: the built-in user and member sanitisers. Depends on Core.
   - `Umbraco.Community.Sanitiser.Core` — the `ISanitiser` extension point, orchestration, and the
-    `DatabaseTableSanitiser` / `DirectorySanitiser` base classes.
-  - `Umbraco.Community.Sanitiser.Users` — removes/anonymises backoffice users.
-  - `Umbraco.Community.Sanitiser.Members` — removes/anonymises members.
-  - `Umbraco.Community.Sanitiser` — meta-package that installs Core, Users and Members, so existing installs
-    upgrade seamlessly.
+    `DatabaseTableSanitiser` / `DirectorySanitiser` base classes, for building custom sanitisers/replacers.
   - `Umbraco.Community.Sanitiser.Faker` — optional replacer generating realistic fake data via Bogus.
   - `Umbraco.Community.Sanitiser.AI` — optional replacer generating values via Umbraco AI (Umbraco 17.4+/18,
     .NET 10 only). It requests fictional people in batches (`AiReplacement:BatchSize`, default 20) to reduce
     the number of model calls, and makes each record's email and username unique regardless of the model
-    output. The `Faker` and `AI` packages are opt-in and not included in the meta-package; install only one
-    replacer package, as only one can be active.
+    output. The `Faker` and `AI` packages are opt-in and depend on Core; install only one, as only one
+    replacer can be active.
 - **Anonymise mode.** The Members and Users sanitisers gained a `Mode` setting (`Delete` or `Anonymise`).
   `Delete` (the default) replaces personal data then deletes the record; `Anonymise` replaces personal
   data but keeps the record.
@@ -83,8 +80,10 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   (`IOptions<UsersSanitiserOptions>` / `IOptions<MembersSanitiserOptions>`).
 - **Custom options pattern changed.** The previous "subclass `SanitiserOptions`" approach is replaced by
   binding your own options section in a composer, as the built-in strategies now do. See the README.
-- **Assembly rename** is binary-breaking for any consumer with a hard assembly reference; the meta-package
-  preserves the NuGet upgrade path.
+- **Package layout.** `Umbraco.Community.Sanitiser` now contains the built-in user and member sanitisers
+  (rather than being a dependency-only meta-package) and depends on `Umbraco.Community.Sanitiser.Core`. The
+  main assembly was also renamed (fixing the `Umbracro` typo), which is binary-breaking for any consumer with
+  a hard assembly reference.
 - Requires Umbraco 13.0+ (.NET 8), 15.0+ (.NET 9), or 17.0+ (.NET 10). The optional `AI` package requires
   Umbraco 17.4+/18.
 

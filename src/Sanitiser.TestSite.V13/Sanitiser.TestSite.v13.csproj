@@ -18,8 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sanitiser.Users\Sanitiser.Users.csproj" />
-    <ProjectReference Include="..\Sanitiser.Members\Sanitiser.Members.csproj" />
+    <ProjectReference Include="..\Sanitiser\Sanitiser.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
