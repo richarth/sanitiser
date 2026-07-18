@@ -19,10 +19,19 @@ public class SanitizationService(
         // if the sanitization service is enabled, then run any sanitizers found
         if (IsEnabled())
         {
-            if (hostEnvironment.IsProduction() && !_options.ProductionOverride)
+            // A dry run makes no changes, so it is allowed to run in Production for a safe preview.
+            if (hostEnvironment.IsProduction() && !_options.ProductionOverride && !_options.DryRun)
             {
                 logger.LogWarning("Sanitisation is enabled but skipped because the environment is Production and ProductionOverride is false.");
                 return;
+            }
+
+            if (_options.DryRun)
+            {
+                logger.LogWarning(
+                    "Sanitisation is running in DRY RUN mode: no data will be modified. The built-in user and " +
+                    "member sanitisers will only log the records they would affect. Custom sanitisers only honour " +
+                    "dry run if they check SanitiserOptions.DryRun themselves.");
             }
 
             logger.LogInformation("Sanitization started.");

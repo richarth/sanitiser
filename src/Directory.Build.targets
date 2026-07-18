@@ -1,0 +1,7 @@
+<Project>
+  <!-- Shared package assets for every packable project; test sites set IsPackable=false -->
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(MSBuildThisFileDirectory)..\docs\assets\img\logo.png" Pack="True" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\docs\README_nuget.md" Pack="True" PackagePath="\" Visible="false" />
+  </ItemGroup>
+</Project>
