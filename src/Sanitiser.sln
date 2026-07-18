@@ -26,6 +26,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sanitiser.AI", "Sanitiser.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sanitiser.Tests", "Sanitiser.Tests\Sanitiser.Tests.csproj", "{60801617-C01A-49BE-9897-D1098B533867}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sanitiser.TestSite.V18", "Sanitiser.TestSite.V18", "{5848AF73-9624-6FAF-49DD-424D0E6F32D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sanitiser.TestSite.v18", "Sanitiser.TestSite.V18\Sanitiser.TestSite.v18.csproj", "{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,9 +124,24 @@ Global
 		{60801617-C01A-49BE-9897-D1098B533867}.Release|x64.Build.0 = Release|Any CPU
 		{60801617-C01A-49BE-9897-D1098B533867}.Release|x86.ActiveCfg = Release|Any CPU
 		{60801617-C01A-49BE-9897-D1098B533867}.Release|x86.Build.0 = Release|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Debug|x64.Build.0 = Debug|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Debug|x86.Build.0 = Debug|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Release|x64.ActiveCfg = Release|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Release|x64.Build.0 = Release|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Release|x86.ActiveCfg = Release|Any CPU
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{44C36FCA-7EC4-4BC5-97C1-37FD37B84771} = {5848AF73-9624-6FAF-49DD-424D0E6F32D4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F07004F-9903-4AEB-9ED0-BE57A0326D20}
