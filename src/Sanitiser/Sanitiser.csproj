@@ -1,56 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net10.0;net8.0;net9.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
-    <ContentTargetFolders>.</ContentTargetFolders>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <Product>Umbraco.Community.Sanitiser</Product>
     <PackageId>Umbraco.Community.Sanitiser</PackageId>
     <Title>Sanitiser</Title>
-    <Description>When enabled, this package will automatically remove personal data from your Umbraco website on startup.</Description>
-    <PackageTags>umbraco;umbraco-marketplace</PackageTags>
-    <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
+    <Description>When enabled, this package will automatically remove personal data from your Umbraco website on startup. Meta-package that installs all Sanitiser strategy packages.</Description>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.4.6</Version>
-    <Authors>Richard Thompson</Authors>
-    <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
-    <PackageProjectUrl>https://github.com/richarth/sanitiser</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/richarth/sanitiser</RepositoryUrl>
-    <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>logo.png</PackageIcon>
-    <AssemblyName>Umbracro.Community.Sanitiser</AssemblyName>
-    <Platform>AnyCPU</Platform>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- Meta-package: no assembly, only dependencies on the strategy packages -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="13.13.0" />
-    <PackageReference Include="Umbraco.Cms.Persistence.EFCore" Version="13.13.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.22" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\docs\assets\img\logo.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\docs\README_nuget.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="appsettings-schema.Sanitiser.json">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
+    <ProjectReference Include="..\Sanitiser.Users\Sanitiser.Users.csproj" />
+    <ProjectReference Include="..\Sanitiser.Members\Sanitiser.Members.csproj" />
   </ItemGroup>
 
 </Project>

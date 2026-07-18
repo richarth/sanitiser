@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <Product>Umbraco.Community.Sanitiser.Members</Product>
+    <PackageId>Umbraco.Community.Sanitiser.Members</PackageId>
+    <Title>Sanitiser Members</Title>
+    <Description>Sanitisation strategy that removes Umbraco members and their cached data on startup.</Description>
+    <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
+    <AssemblyName>Umbraco.Community.Sanitiser.Members</AssemblyName>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
+    <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
+  </ItemGroup>
+
+</Project>
