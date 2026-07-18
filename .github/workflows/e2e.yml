@@ -1,0 +1,58 @@
+name: E2E
+
+# Deliberately NOT triggered on push or pull_request: the end-to-end run boots a real Umbraco site and takes
+# minutes, so it is kept off the standard CI path. Run it on demand or nightly instead.
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: '0 3 * * *'   # nightly at 03:00 UTC
+
+permissions:
+    contents: read
+
+jobs:
+    e2e:
+        runs-on: ubuntu-latest
+
+        steps:
+
+            -   name: Checkout repository
+                uses: actions/checkout@v4
+
+            -   name: Setup .NET
+                uses: actions/setup-dotnet@v4
+                with:
+                    dotnet-version: 10.0.x
+
+            -   name: Setup Node
+                uses: actions/setup-node@v4
+                with:
+                    node-version: 20
+                    cache: npm
+                    cache-dependency-path: e2e/package-lock.json
+
+            # Build the test site up front so the Playwright web server launches it quickly rather than
+            # spending the readiness timeout compiling.
+            -   name: Build the V17 test site
+                run: dotnet build src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj --configuration Release
+
+            -   name: Install Playwright and browser
+                working-directory: e2e
+                run: |
+                    npm ci
+                    npx playwright install --with-deps chromium
+
+            -   name: Run end-to-end smoke tests
+                working-directory: e2e
+                run: npm test
+
+            -   name: Upload diagnostics on failure
+                if: failure()
+                uses: actions/upload-artifact@v4
+                with:
+                    name: e2e-diagnostics
+                    path: |
+                        e2e/playwright-report/
+                        e2e/test-results/
+                        src/Sanitiser.TestSite.V17/umbraco/Logs/
+                    retention-days: 7
