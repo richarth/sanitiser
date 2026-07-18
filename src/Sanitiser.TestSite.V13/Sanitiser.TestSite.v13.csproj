@@ -3,11 +3,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms" Version="13.13.0" />
-    <PackageReference Include="Umbraco.Forms" Version="13.9.0" />
+    <PackageReference Include="Umbraco.Cms" Version="13.15.1" />
+    <PackageReference Include="Umbraco.Forms" Version="13.9.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sanitiser\Sanitiser.csproj" />
+    <ProjectReference Include="..\Sanitiser.Users\Sanitiser.Users.csproj" />
+    <ProjectReference Include="..\Sanitiser.Members\Sanitiser.Members.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
