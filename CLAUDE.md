@@ -29,6 +29,10 @@ environments). It is a family of NuGet packages under `src/`:
   sites install.
 - **Sanitiser.Faker / Sanitiser.AI** — optional replacer packages (Bogus / Umbraco AI) that depend on Core.
   Opt-in. Only one replacer can be active at a time.
+- **Sanitiser.Forms** — optional *strategy* package (not a replacer) that deletes Umbraco Forms submissions
+  (the `UFRecord*` tables, via Core's `SanitiserDbContext`) and their uploaded files. Depends on Core +
+  `Umbraco.Forms.Core`; install only on sites that use Umbraco Forms. It was merged in from a separate
+  repository with history preserved.
 
 ### Multi-targeting (important)
 
@@ -39,19 +43,24 @@ A single package version supports several Umbraco majors via per-target-framewor
 - `net9.0` → Umbraco 15/16 (`[15.0.0,17)`)
 - `net10.0` → Umbraco 17/18 (`[17.0.0,19)`)
 
-`Sanitiser.AI` is `net10.0`-only (Umbraco 17.4+/18), because Umbraco.AI only ships there. Code that calls
-Umbraco APIs must compile against the *floor* of each range, and those APIs differ across majors — e.g.
-`SanitiserComposer` uses `#if NET10_0_OR_GREATER` around `AddUmbracoDbContext` because the older overload was
-removed in Umbraco 18. Verify API availability across floors before using it.
+`Sanitiser.AI` is `net10.0`-only (Umbraco 17.4+/18), because Umbraco.AI only ships there. `Sanitiser.Forms`
+references `Umbraco.Forms.Core` per-TFM as well (Forms 13/16/17/18 — Forms skipped 14/15, so the `net9.0`
+target pins the CMS floor to 16 via a `VersionOverride` to match Forms 16). Package versions are centralised in
+`src/Directory.Packages.props`. Code that calls Umbraco APIs must compile against the *floor* of each range,
+and those APIs differ across majors — e.g. `SanitiserComposer` uses `#if NET10_0_OR_GREATER` around
+`AddUmbracoDbContext` because the older overload was removed in Umbraco 18. Verify API availability across
+floors before using it.
 
 ### Runtime flow
 
 `SanitiserComposer` registers the service, the DbContext, the default `TemplatePersonalDataReplacer` (via
 `TryAddSingleton` so replacer packages can override it regardless of composer order), and a handler for
 `UmbracoApplicationStartingNotification`. On startup `SanitizationService` runs — unless disabled, or in
-Production without `ProductionOverride`/`DryRun` — iterating every discovered `ISanitiser`. Each strategy uses
-the registered `IPersonalDataReplacer` to produce replacement values, then deletes (`Delete` mode) or saves
-(`Anonymise` mode) each record. After all sanitisers have run, the service clears pending
+Production without `ProductionOverride`/`DryRun` — iterating every discovered `ISanitiser`. The built-in user/member
+sanitisers use the registered `IPersonalDataReplacer` to produce replacement values, then delete (`Delete`
+mode) or save (`Anonymise` mode) each record; other strategies (Forms, and the `DatabaseTableSanitiser` /
+`DirectorySanitiser` base classes) simply remove data and do not use a replacer. After all sanitisers have run,
+the service clears pending
 `umbracoCacheInstruction` entries once via `ICacheInstructionCleaner` (which calls the supported
 `ICacheInstructionRepository.DeleteInstructionsOlderThan` within a scope) because member cache-refresh payloads
 can contain usernames; this clears *all* pending instructions, not just member/user ones (see the README for
@@ -77,7 +86,9 @@ the load-balanced implication).
 There is a test site per supported Umbraco major: `Sanitiser.TestSite.V13` (net8/Umbraco 13),
 `.V16` (net9/Umbraco 16), `.V17` (net10/Umbraco 17) and `.V18` (net10/Umbraco 18). They are manual harnesses
 using unattended install + SQLite; their `umbraco/` runtime artifacts (database, logs) are not committed. V17
-exercises Faker + Anonymise mode; the others use the default template replacer. `build.yml` builds the whole
+exercises Faker + Anonymise mode; the others use the default template replacer. All four also install Umbraco
+Forms and enable the Forms sanitiser, so the e2e smoke test asserts it ran against each real Forms schema.
+`build.yml` builds the whole
 solution (so every test site and TFM compiles) and runs the unit/integration tests on push and PR. `e2e.yml`
 runs the Playwright smoke tests as a matrix over every test site, manually or nightly (kept off the push/PR
 path deliberately); the target site is chosen via the `SITE_PROJECT` env var read by `e2e/playwright.config.ts`.

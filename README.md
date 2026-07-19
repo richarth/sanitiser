@@ -257,6 +257,11 @@ in a different location. There is no "anonymise" mode — form fields are arbitr
 outright. `DryRun` is honoured (it reports how many submissions it would delete), and only the record tables
 that exist on your Umbraco Forms version are touched.
 
+> [!NOTE]
+> This clears Forms' **default** storage — the database record tables and the upload directory. If your site
+> stores submissions through a custom Forms data source or storage provider, those are not covered; add a
+> custom `ISanitiser` for them.
+
 > [!WARNING]
 > N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging
 > environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
