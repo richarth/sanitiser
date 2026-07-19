@@ -92,3 +92,11 @@ Forms and enable the Forms sanitiser, so the e2e smoke test asserts it ran again
 solution (so every test site and TFM compiles) and runs the unit/integration tests on push and PR. `e2e.yml`
 runs the Playwright smoke tests as a matrix over every test site, manually or nightly (kept off the push/PR
 path deliberately); the target site is chosen via the `SITE_PROJECT` env var read by `e2e/playwright.config.ts`.
+
+`release.yml` triggers on a `N.N.N` tag (no `v` prefix). It runs the tests, then packs and pushes all five
+packages to NuGet and creates a GitHub release from the matching `CHANGELOG.md` section — so **the version being
+tagged must have a `## [N.N.N]` changelog entry**, and the whole family ships together on the single `Version`
+in `src/Directory.Build.props`. Publishing uses the `NUGET_API_KEY` secret (a glob-scoped
+`Umbraco.Community.Sanitiser*` key); a move to NuGet Trusted Publishing (OIDC, keyless) is planned for a later
+release. Dependabot (`.github/dependabot.yml`) keeps the workflow actions current, and the workflows cache
+`~/.nuget/packages`.
