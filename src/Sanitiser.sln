@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.gitignore = ..\.gitignore
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sanitiser.TestSite.v13", "Sanitiser.TestSite.v13\Sanitiser.TestSite.v13.csproj", "{A4F44163-E79B-4A82-ABD0-6B7DDA410C80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sanitiser.TestSite.v13", "Sanitiser.TestSite.V13\Sanitiser.TestSite.v13.csproj", "{A4F44163-E79B-4A82-ABD0-6B7DDA410C80}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sanitiser.TestSite.v17", "Sanitiser.TestSite.V17\Sanitiser.TestSite.v17.csproj", "{31D9F5F5-5B39-48E7-BDBD-22DB0112DC61}"
 EndProject
