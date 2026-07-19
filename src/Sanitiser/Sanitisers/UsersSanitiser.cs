@@ -66,7 +66,7 @@ public class UsersSanitiser(
 
             if (dryRun)
             {
-                logger.LogInformation("[DRY RUN] Would {mode} user {userId} ({email})", mode, user.Id, user.Email);
+                logger.LogInformation("[DRY RUN] Would {mode} user {userId}", mode, user.Id);
                 processedCount++;
                 continue;
             }
