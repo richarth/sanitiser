@@ -4,19 +4,15 @@ using Umbraco.Community.Sanitiser.sanitisers;
 
 namespace Umbraco.Community.Sanitiser.Forms.Sanitisers;
 
-public class UmbracoFormsUploadsSanitiser : DirectorySanitiser
+/// <summary>
+/// Empties the Umbraco Forms upload directory, which holds files submitted through file-upload fields.
+/// Inherits the <see cref="DirectorySanitiser"/> content-root safety guard and dry-run handling.
+/// </summary>
+public class UmbracoFormsUploadsSanitiser(IOptions<FormsSanitiserOptions> options) : DirectorySanitiser
 {
-    private readonly SanitiserFormsOptions _options;
+    private readonly FormsSanitiserOptions _options = options.Value;
 
-    public UmbracoFormsUploadsSanitiser(IOptions<SanitiserFormsOptions> options) => _options = options.Value;
+    public override bool IsEnabled() => _options.Enable && _options.Uploads;
 
-    protected override string GetDirectoryPath()
-    {
-        return "wwwroot/media/forms/upload/";
-    }
-
-    public override bool IsEnabled()
-    {
-        return _options.UmbracoFormsSanitiser?.Enable ?? false;
-    }
+    protected override string GetDirectoryPath() => "wwwroot/media/forms/upload";
 }

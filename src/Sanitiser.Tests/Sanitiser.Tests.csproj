@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Sanitiser\Sanitiser.csproj" />
     <ProjectReference Include="..\Sanitiser.Faker\Sanitiser.Faker.csproj" />
     <ProjectReference Include="..\Sanitiser.AI\Sanitiser.AI.csproj" />
+    <ProjectReference Include="..\Sanitiser.Forms\Sanitiser.Forms.csproj" />
   </ItemGroup>
 
 </Project>

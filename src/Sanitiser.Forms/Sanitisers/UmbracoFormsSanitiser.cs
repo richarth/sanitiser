@@ -1,46 +1,76 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.Sanitiser.Forms.Configuration;
-using Umbraco.Community.Sanitiser.Forms.Models;
+using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.sanitisers;
 
 namespace Umbraco.Community.Sanitiser.Forms.Sanitisers;
 
-public class UmbracoFormsSanitiser : ISanitiser
+/// <summary>
+/// Deletes all Umbraco Forms submissions. Form submissions are user-entered personal data (names, emails,
+/// messages, ...), so a sanitised non-production copy should not retain them.
+/// </summary>
+public class UmbracoFormsSanitiser(
+    IOptions<FormsSanitiserOptions> options,
+    SanitiserDbContext dbContext,
+    ILogger<UmbracoFormsSanitiser> logger) : ISanitiser
 {
-    private readonly IScopeProvider _scopeProvider;
-    private readonly SanitiserFormsOptions _options;
+    private readonly FormsSanitiserOptions _options = options.Value;
 
-    public UmbracoFormsSanitiser(IOptions<SanitiserFormsOptions> options, IScopeProvider scopeProvider)
+    // Umbraco Forms stores each submission across these tables. They are emptied leaf-first, with the parent
+    // UFRecords last, so foreign keys are never violated. UFRecordFieldValues only exists on newer Forms
+    // majors; deletes tolerate a table that is absent on a given version (see SanitiseTable).
+    private static readonly string[] RecordTablesLeafFirst =
+    [
+        "UFRecordAudit",
+        "UFRecordWorkflowAudit",
+        "UFRecordDataBit",
+        "UFRecordDataDateTime",
+        "UFRecordDataInteger",
+        "UFRecordDataLongString",
+        "UFRecordDataString",
+        "UFRecordFieldValues",
+        "UFRecordFields",
+        "UFRecords",
+    ];
+
+    public bool IsEnabled() => _options.Enable;
+
+    public async Task Sanitise(SanitisationContext context)
     {
-        _scopeProvider = scopeProvider;
-        _options = options.Value;
+        if (context.DryRun)
+        {
+            context.Logger.LogInformation(
+                "[DRY RUN] Would delete all Umbraco Forms submissions ({tableCount} record tables).",
+                RecordTablesLeafFirst.Length);
+            return;
+        }
+
+        foreach (var table in RecordTablesLeafFirst)
+        {
+            context.CancellationToken.ThrowIfCancellationRequested();
+            await SanitiseTable(table, context.CancellationToken);
+        }
+
+        logger.LogInformation("Deleted all Umbraco Forms submissions.");
     }
 
-    public async Task Sanitise()
+    private async Task SanitiseTable(string table, CancellationToken cancellationToken)
     {
-        await DeleteFormEntries();
-    }
-
-    public bool IsEnabled()
-    {
-        return _options.UmbracoFormsSanitiser?.Enable ?? false;
-    }
-
-    private async Task DeleteFormEntries()
-    {
-        using IScope scope = _scopeProvider.CreateScope();
-
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordsAudit>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataBit>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataDateTime>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataInteger>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataLongString>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordDataString>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordFields>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecordWorkflowAudit>().Execute();
-        await scope.Database.DeleteManyAsync<UmbracoFormsRecords>().Execute();
-
-        scope.Complete();
+        try
+        {
+            // The table names are compile-time constants, not user input, so the raw SQL is safe.
+#pragma warning disable EF1002
+            await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]", cancellationToken);
+#pragma warning restore EF1002
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // A record table can be absent on a Forms version that does not define it (e.g. UFRecordFieldValues
+            // on older majors). Skip it rather than aborting the rest of the run, but log so a genuine failure
+            // is still visible.
+            logger.LogWarning(ex, "Skipped clearing Forms table [{table}] (it may not exist on this Umbraco Forms version).", table);
+        }
     }
 }

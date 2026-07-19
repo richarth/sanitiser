@@ -9,15 +9,19 @@
     <PackageVersion Include="Umbraco.AI.Core" Version="[17.1.1,19)" />
   </ItemGroup>
 
-  <!-- Umbraco per target framework: Umbraco 13 (.NET 8), 15/16 (.NET 9), 17/18 (.NET 10). -->
+  <!-- Umbraco per target framework: Umbraco 13 (.NET 8), 15/16 (.NET 9), 17/18 (.NET 10). Umbraco Forms tracks
+       the CMS major (it skipped 14/15): Forms 13 on .NET 8, 16 on .NET 9, 17/18 on .NET 10. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageVersion Include="Umbraco.Cms.Persistence.EFCore" Version="[13.0.0,14)" />
+    <PackageVersion Include="Umbraco.Forms.Core" Version="[13.0.0,14)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
     <PackageVersion Include="Umbraco.Cms.Persistence.EFCore" Version="[15.0.0,17)" />
+    <PackageVersion Include="Umbraco.Forms.Core" Version="[16.0.0,17)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <PackageVersion Include="Umbraco.Cms.Persistence.EFCore" Version="[17.0.0,19)" />
+    <PackageVersion Include="Umbraco.Forms.Core" Version="[17.0.0,19)" />
   </ItemGroup>
 
   <!-- Test dependencies. -->
