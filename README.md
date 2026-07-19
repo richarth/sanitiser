@@ -251,10 +251,11 @@ and enable it:
 ```
 
 `Enable` deletes every Forms submission (the records and their field data). `Uploads` (default `true`) also
-empties the Forms upload directory (`wwwroot/media/forms/upload`), which holds files submitted through
-file-upload fields. There is no "anonymise" mode — form fields are arbitrary, so submissions are deleted
-outright. `DryRun` is honoured, and only the record tables that exist on your Umbraco Forms version are
-touched.
+empties the Forms upload directory, which holds files submitted through file-upload fields; it defaults to
+`wwwroot/media/forms/upload` and can be pointed elsewhere with `UploadsPath` if your site stores form uploads
+in a different location. There is no "anonymise" mode — form fields are arbitrary, so submissions are deleted
+outright. `DryRun` is honoured (it reports how many submissions it would delete), and only the record tables
+that exist on your Umbraco Forms version are touched.
 
 > [!WARNING]
 > N.B. This package is not intended to be run on production sites, only enable sanitization on a development or staging

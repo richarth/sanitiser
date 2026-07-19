@@ -14,5 +14,5 @@ public class UmbracoFormsUploadsSanitiser(IOptions<FormsSanitiserOptions> option
 
     public override bool IsEnabled() => _options.Enable && _options.Uploads;
 
-    protected override string GetDirectoryPath() => "wwwroot/media/forms/upload";
+    protected override string GetDirectoryPath() => _options.UploadsPath;
 }

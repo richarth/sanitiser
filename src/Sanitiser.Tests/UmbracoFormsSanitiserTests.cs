@@ -88,7 +88,9 @@ public sealed class UmbracoFormsSanitiserTests : IDisposable
 
         Assert.Equal(1, RowCount("UFRecords"));
         Assert.Equal(1, RowCount("UFRecordDataString"));
-        Assert.Contains(logger.Entries, entry => entry.Message.Contains("[DRY RUN]"));
+        // Dry run reports the count it would delete without changing anything.
+        Assert.Contains(logger.Entries,
+            entry => entry.Message.Contains("[DRY RUN]") && entry.Message.Contains("Would delete 1 Umbraco Forms submission"));
     }
 
     [Fact]
@@ -98,5 +100,21 @@ public sealed class UmbracoFormsSanitiserTests : IDisposable
             Options.Create(new FormsSanitiserOptions()), _dbContext,
             NullLogger<UmbracoFormsSanitiser>.Instance).IsEnabled());
         Assert.True(CreateSanitiser().IsEnabled());
+    }
+}
+
+public sealed class UmbracoFormsUploadsSanitiserTests
+{
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, false)]
+    public void Is_enabled_only_when_both_enable_and_uploads_are_set(bool enable, bool uploads, bool expected)
+    {
+        var sanitiser = new UmbracoFormsUploadsSanitiser(
+            Options.Create(new FormsSanitiserOptions { Enable = enable, Uploads = uploads }));
+
+        Assert.Equal(expected, sanitiser.IsEnabled());
     }
 }

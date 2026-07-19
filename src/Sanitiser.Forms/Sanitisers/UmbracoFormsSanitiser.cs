@@ -43,13 +43,18 @@ public class UmbracoFormsSanitiser(
 
     public async Task Sanitise(SanitisationContext context)
     {
+        var existingTables = await GetExistingTables(context.CancellationToken);
+
         if (context.DryRun)
         {
-            context.Logger.LogInformation("[DRY RUN] Would delete all Umbraco Forms submissions.");
+            var submissions = existingTables.Contains(RecordsTable)
+                ? await CountRows(RecordsTable, context.CancellationToken)
+                : 0;
+            context.Logger.LogInformation(
+                "[DRY RUN] Would delete {count} Umbraco Forms submission(s) and their field data.", submissions);
             return;
         }
 
-        var existingTables = await GetExistingTables(context.CancellationToken);
         var submissionsDeleted = 0;
 
         foreach (var table in RecordTablesLeafFirst)
@@ -89,5 +94,14 @@ public class UmbracoFormsSanitiser(
 
         List<string> names = await dbContext.Database.SqlQueryRaw<string>(query).ToListAsync(cancellationToken);
         return new HashSet<string>(names, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private async Task<int> CountRows(string table, CancellationToken cancellationToken)
+    {
+        // The table name is a compile-time constant, not user input, so the raw SQL is safe. COUNT(*) is int
+        // on SQL Server, so read it as int (SQLite's wider count value still fits for any realistic table).
+        return await dbContext.Database
+            .SqlQueryRaw<int>($"SELECT COUNT(*) AS Value FROM [{table}]")
+            .SingleAsync(cancellationToken);
     }
 }
