@@ -2,7 +2,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using NPoco;
 using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.sanitisers;
 using Umbraco.Community.Sanitiser.Tests.Support;
@@ -116,12 +115,10 @@ public sealed class DatabaseTableSanitiserDryRunTests : IDisposable
         _connection.Dispose();
     }
 
-    [TableName("sanitiser_test_table")]
-    private class TestRow;
-
-    private sealed class TestTableSanitiser(SanitiserDbContext dbContext) : DatabaseTableSanitiser<TestRow>(dbContext)
+    private sealed class TestTableSanitiser(SanitiserDbContext dbContext) : DatabaseTableSanitiser(dbContext)
     {
         public override bool IsEnabled() => true;
+        protected override string GetTableName() => "sanitiser_test_table";
     }
 
     private long RowCount()

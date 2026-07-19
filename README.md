@@ -176,31 +176,19 @@ for replacing the template replacer entirely.
 
 ### Custom database tables
 
-To enable the deletion of data from custom database tables, you can extend the `DatabaseTableSanitiser` class and create
-a poco with a table name attribute.
-
-For example, to have a table called `test` automatically emptied on startup, create a poco like this:
-
-```csharp
-using NPoco;
-
-[TableName("test")]
-public class Test;
-```
-
-And extend the `DatabaseTableSanitiser` class like this with your poco class as a type parameter:
+To enable the deletion of data from custom database tables, extend the `DatabaseTableSanitiser` class and
+implement `GetTableName()` (the table to empty) and `IsEnabled()`. For example, to have a table called `test`
+automatically emptied on startup:
 
 ```csharp
 using Umbraco.Community.Sanitiser.Persistence;
+using Umbraco.Community.Sanitiser.sanitisers;
 
-namespace Umbraco.Community.Sanitiser.sanitisers;
-
-public class TestTableSanitiser(SanitiserDbContext dbContext) : DatabaseTableSanitiser<Test>(dbContext)
+public class TestTableSanitiser(SanitiserDbContext dbContext) : DatabaseTableSanitiser(dbContext)
 {
-    public override bool IsEnabled()
-    {
-        return true;
-    }
+    protected override string GetTableName() => "test";
+
+    public override bool IsEnabled() => true;
 }
 ```
 

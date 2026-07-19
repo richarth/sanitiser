@@ -90,6 +90,9 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   `context.CancellationToken`.
 - **`IPersonalDataReplacer.Replace` gained a `CancellationToken` parameter.** Custom replacer implementations
   must add the parameter (callers can omit it — it defaults).
+- **`DatabaseTableSanitiser` is no longer generic.** Replace `DatabaseTableSanitiser<T>` + an `[NPoco.TableName]`
+  POCO with a non-generic `DatabaseTableSanitiser` and an overridden `GetTableName()`. This removes the last
+  NPoco dependency and needs no marker POCO.
 - **Replacement templates moved.** `EmailTemplate`, `NameTemplate`, and `UserNameTemplate` previously lived
   under `Sanitiser:UsersSanitiser`. They now live in the shared `Sanitiser:Replacement` section and apply to
   all sanitisers. Move any customised templates accordingly; the appsettings shape is otherwise unchanged.
