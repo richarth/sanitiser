@@ -7,7 +7,6 @@
     <Description>When enabled, this package deletes Umbraco Forms submissions and their uploaded files from your Umbraco website on startup. Part of the Sanitiser package family.</Description>
     <RootNamespace>Umbraco.Community.Sanitiser.Forms</RootNamespace>
     <AssemblyName>Umbraco.Community.Sanitiser.Forms</AssemblyName>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Umbraco.Forms.Core is versioned per target framework in ../Directory.Packages.props to match the Umbraco

@@ -9,7 +9,6 @@
     <Description>Core interfaces and orchestration for the Sanitiser package family. Provides the ISanitiser extension point, auto-discovery, and base classes for building sanitisation strategies for Umbraco.</Description>
     <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
     <AssemblyName>Umbraco.Community.Sanitiser.Core</AssemblyName>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Versions are centralised in ../Directory.Packages.props. Umbraco.Cms.Persistence.EFCore is versioned

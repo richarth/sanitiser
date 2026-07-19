@@ -7,7 +7,6 @@
     <Description>When enabled, this package automatically removes or anonymises personal data (users and members) from your Umbraco website on startup.</Description>
     <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
     <AssemblyName>Umbraco.Community.Sanitiser</AssemblyName>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
