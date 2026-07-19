@@ -22,19 +22,16 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
     the number of model calls, and makes each record's email and username unique regardless of the model
     output. The `Faker` and `AI` packages are opt-in and depend on Core; install only one, as only one
     replacer can be active.
-- **Anonymise mode.** The Members and Users sanitisers gained a `Mode` setting (`Delete` or `Anonymise`).
+- **Backoffice users sanitiser.** A new `UsersSanitiser` sanitises Umbraco backoffice users (the Super Admin is
+  always excluded), alongside the members sanitiser that existed before. Enable it under `Sanitiser:UsersSanitiser`.
+- **Anonymise mode.** The members and users sanitisers support a `Mode` setting (`Delete` or `Anonymise`).
   `Delete` (the default) replaces personal data then deletes the record; `Anonymise` replaces personal
   data but keeps the record. In `Anonymise` mode the members sanitiser also clears editor-defined member
-  properties (address, phone, ...) by default, leaving the built-in membership status fields (approved,
-  locked out, login tracking) intact — configurable via `MembersSanitiser:AnonymiseCustomProperties`
-  and `MembersSanitiser:PropertiesToPreserve` — and the users sanitiser clears the backoffice notes and
-  avatar, so personal data outside the name/email/username fields does not linger. See the README's
-  "What is and isn't scrubbed" for the boundaries (e.g. credentials are not reset by `Anonymise`).
-- **Cache-instruction cleanup.** After sanitising, pending `umbracoCacheInstruction` entries are cleared —
-  member cache-refresh payloads can contain the (previous) username, so this stops personal data lingering
-  there. It uses Umbraco's supported `ICacheInstructionRepository.DeleteInstructionsOlderThan` rather than
-  matching the internal JSON format, which means it clears *all* pending instructions (see the README note for
-  the load-balanced implication).
+  properties (address, phone, ...) by default, leaving the built-in membership fields (approved, locked out,
+  login tracking, ...) intact — configurable via `MembersSanitiser:AnonymiseCustomProperties` and
+  `MembersSanitiser:PropertiesToPreserve` — and the users sanitiser clears the backoffice notes and avatar, so
+  personal data outside the name/email/username fields does not linger. See the README's "What is and isn't
+  scrubbed" for the boundaries (e.g. credentials are not reset by `Anonymise`).
 - **`DirectorySanitiser` safety guard.** The target directory must resolve to a location strictly inside the
   site content root; an empty path, the content root itself, or a path outside the site (including via `..`)
   now throws instead of deleting anything.
@@ -42,7 +39,7 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   the service, `SanitisationContext`, sanitisers and `IPersonalDataReplacer`, so a long run is cancelled on
   shutdown. The AI replacer additionally bounds each call with `AiReplacement:TimeoutSeconds` (default 30) and
   falls back to templated values on timeout, so a slow or hung model can't block application startup.
-- **`MaxRecords` cap.** The user and member sanitisers gained a `MaxRecords` option (default 0 = unlimited)
+- **`MaxRecords` cap.** The user and member sanitisers have a `MaxRecords` option (default 0 = unlimited)
   that bounds how many records are loaded per run on very large sites; when exceeded, the first `MaxRecords`
   are processed and a warning is logged.
 - **Dry run.** A `Sanitiser:DryRun` option makes every sanitiser log the changes it would make without making
@@ -63,16 +60,23 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   cleaner) to verify PII is actually replaced in Anonymise mode, scrubbed before deletion in Delete mode, that
   the Super Admin and excluded domains are untouched, and that cache instructions are cleared after a run.
 - `build.yml` CI workflow that builds all target frameworks and runs the tests on push and pull request.
-- Playwright end-to-end smoke tests (`e2e/`) that boot the real V17 test site and verify the backoffice is
-  served and that sanitisation runs during startup — proving the packages are safe to install in a real
-  Umbraco site.
+- Playwright end-to-end smoke tests (`e2e/`) that boot a real test site on each supported major (Umbraco
+  13/16/17/18, via a CI matrix) and verify the backoffice is served and that sanitisation runs during
+  startup — proving the packages are safe to install in a real Umbraco site.
 - A `SECURITY.md` describing how to report vulnerabilities, and README guidance on how the ASP.NET Core
   environment affects whether sanitisation runs (only `Production` is protected).
 
 ### Changed
 
-- Members are now scrubbed (name, email, username replaced) before deletion, matching the behaviour users
-  already had. Previously members were deleted without their lingering audit/log-table values being scrubbed.
+- Members are now scrubbed (name, email and username replaced) before deletion; previously they were deleted
+  without their lingering audit/log-table values being scrubbed.
+- **Cache-instruction cleanup reworked.** Clearing personal data from `umbracoCacheInstruction` (member
+  cache-refresh payloads can contain the previous username) now uses Umbraco's supported
+  `ICacheInstructionRepository.DeleteInstructionsOlderThan` instead of a direct NPoco delete that matched the
+  internal instruction JSON. It also runs once per sanitisation at the service level rather than inside the
+  members sanitiser. The trade-off is that the supported API is prune-by-date only, so it clears *all* pending
+  instructions rather than just the member ones the previous code targeted — harmless on a single server, but
+  see the README note for the load-balanced implication.
 - Assembly name typo fixed: `Umbracro.Community.Sanitiser` → `Umbraco.Community.Sanitiser.Core`.
 - Shared package metadata and version consolidated into `src/Directory.Build.props`.
 - The default template replacement email domain changed from `domain.com` (a real, registered domain) to the
@@ -102,23 +106,20 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 - **`ISanitiser.Sanitise` signature changed** from `Sanitise()` to `Sanitise(SanitisationContext context)`.
   Custom `ISanitiser` implementations must update the signature and should honour `context.DryRun` and
   `context.CancellationToken`.
-- **`IPersonalDataReplacer.Replace` gained a `CancellationToken` parameter.** Custom replacer implementations
-  must add the parameter (callers can omit it — it defaults).
 - **`DatabaseTableSanitiser` is no longer generic.** Replace `DatabaseTableSanitiser<T>` + an `[NPoco.TableName]`
   POCO with a non-generic `DatabaseTableSanitiser` and an overridden `GetTableName()`. This removes the last
   NPoco dependency and needs no marker POCO.
-- **Replacement templates moved.** `EmailTemplate`, `NameTemplate`, and `UserNameTemplate` previously lived
-  under `Sanitiser:UsersSanitiser`. They now live in the shared `Sanitiser:Replacement` section and apply to
-  all sanitisers. Move any customised templates accordingly; the appsettings shape is otherwise unchanged.
-- **Options split (source-breaking for extenders).** Code that injected `IOptions<SanitiserOptions>` to read
-  the nested `UsersSanitiser` / `MembersSanitiser` options should now inject the per-strategy options type
-  (`IOptions<UsersSanitiserOptions>` / `IOptions<MembersSanitiserOptions>`).
+- **`MembersSanitiser` options are now a top-level type.** They previously lived nested on `SanitiserOptions`
+  (`SanitiserOptions.MembersSanitiser`); code that injected `IOptions<SanitiserOptions>` to read them should
+  now inject `IOptions<MembersSanitiserOptions>`. The `appsettings.json` shape (`Sanitiser:MembersSanitiser`)
+  is unchanged.
 - **Custom options pattern changed.** The previous "subclass `SanitiserOptions`" approach is replaced by
   binding your own options section in a composer, as the built-in strategies now do. See the README.
-- **Package layout.** `Umbraco.Community.Sanitiser` now contains the built-in user and member sanitisers
-  (rather than being a dependency-only meta-package) and depends on `Umbraco.Community.Sanitiser.Core`. The
-  main assembly was also renamed (fixing the `Umbracro` typo), which is binary-breaking for any consumer with
-  a hard assembly reference.
+- **Package layout.** The single `Umbraco.Community.Sanitiser` package now depends on the new
+  `Umbraco.Community.Sanitiser.Core` (which holds the interfaces, orchestration and base classes); the main
+  package keeps the built-in user and member sanitisers. Its assembly was also renamed (fixing the `Umbracro`
+  typo, now `Umbraco.Community.Sanitiser`), which is binary-breaking for any consumer with a hard assembly
+  reference.
 - Requires Umbraco 13.0+ (.NET 8), 15.0+ (.NET 9), or 17.0+ (.NET 10). The optional `AI` package requires
   Umbraco 17.4+/18.
 

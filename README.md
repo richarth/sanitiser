@@ -402,7 +402,7 @@ using Umbraco.Community.Sanitiser.Replacement;
 
 public class MyReplacer : IPersonalDataReplacer
 {
-    public Task<PersonalData> Replace(PersonalData original, int index)
+    public Task<PersonalData> Replace(PersonalData original, int index, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new PersonalData(
             $"Person {index}",

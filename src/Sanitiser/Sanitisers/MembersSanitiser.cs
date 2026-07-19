@@ -115,8 +115,9 @@ public class MembersSanitiser(
     // carry, which only matters in Anonymise mode (Delete removes the whole record and its properties).
     private void AnonymiseAdditionalData(IMember member)
     {
-        // Backoffice notes about the member can contain personal data. Cleared explicitly so it is scrubbed
-        // even when AnonymiseCustomProperties is off; the property loop below would otherwise cover it too.
+        // Backoffice notes about the member can contain personal data. Cleared explicitly because it is the one
+        // personal built-in field: the property loop below skips all umbracoMember* aliases (including this one,
+        // umbracoMemberComments), and this also runs when AnonymiseCustomProperties is off.
         member.Comments = null;
 
         if (!_sanitiserOptions.AnonymiseCustomProperties)
