@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Membership;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.Sanitiser.Configuration;
@@ -40,7 +39,7 @@ public class UsersSanitiser(
         // Load in one page (bounded by MaxRecords) to avoid pagination issues while deleting.
         var pageSize = _sanitiserOptions.MaxRecords > 0 ? _sanitiserOptions.MaxRecords : int.MaxValue;
         var allUsers = userService.GetAll(0, pageSize, out var totalRecords)
-            .Where(user => user.Id != Constants.Security.SuperUserId) // Don't remove the Super Admin
+            .Where(user => user.Id != -1) // Don't remove the Super Admin (Constants.Security.SuperUserId, obsolete on Umbraco 15+)
             .ToList();
 
         if (_sanitiserOptions.MaxRecords > 0 && totalRecords > _sanitiserOptions.MaxRecords)

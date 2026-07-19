@@ -92,7 +92,10 @@ public class UmbracoFormsSanitiser(
             ? "SELECT name AS Value FROM sqlite_master WHERE type = 'table'"
             : "SELECT TABLE_NAME AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
 
+        // The query is one of two fixed literals, not user input, so the raw SQL is safe.
+#pragma warning disable EF1002
         List<string> names = await dbContext.Database.SqlQueryRaw<string>(query).ToListAsync(cancellationToken);
+#pragma warning restore EF1002
         return new HashSet<string>(names, StringComparer.OrdinalIgnoreCase);
     }
 
@@ -100,8 +103,10 @@ public class UmbracoFormsSanitiser(
     {
         // The table name is a compile-time constant, not user input, so the raw SQL is safe. COUNT(*) is int
         // on SQL Server, so read it as int (SQLite's wider count value still fits for any realistic table).
+#pragma warning disable EF1002
         return await dbContext.Database
             .SqlQueryRaw<int>($"SELECT COUNT(*) AS Value FROM [{table}]")
             .SingleAsync(cancellationToken);
+#pragma warning restore EF1002
     }
 }
