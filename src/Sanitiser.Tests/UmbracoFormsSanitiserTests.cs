@@ -67,11 +67,16 @@ public sealed class UmbracoFormsSanitiserTests : IDisposable
     [Fact]
     public async Task A_real_run_deletes_every_submission_respecting_foreign_keys()
     {
-        await CreateSanitiser().Sanitise(new SanitisationContext(DryRun: false, NullLogger.Instance));
+        var logger = new ListLogger<UmbracoFormsSanitiser>();
+
+        await new UmbracoFormsSanitiser(Options.Create(new FormsSanitiserOptions { Enable = true }), _dbContext, logger)
+            .Sanitise(new SanitisationContext(DryRun: false, NullLogger.Instance));
 
         Assert.Equal(0, RowCount("UFRecords"));
         Assert.Equal(0, RowCount("UFRecordFields"));
         Assert.Equal(0, RowCount("UFRecordDataString"));
+        // The single UFRecords row is the one submission; the count is reported from its DELETE.
+        Assert.Contains(logger.Entries, entry => entry.Message.Contains("Deleted 1 Umbraco Forms submission"));
     }
 
     [Fact]

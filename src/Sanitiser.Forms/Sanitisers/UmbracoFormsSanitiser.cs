@@ -18,9 +18,13 @@ public class UmbracoFormsSanitiser(
 {
     private readonly FormsSanitiserOptions _options = options.Value;
 
+    // The parent submission table; its row count is the number of submissions removed.
+    private const string RecordsTable = "UFRecords";
+
     // Umbraco Forms stores each submission across these tables. They are emptied leaf-first, with the parent
-    // UFRecords last, so foreign keys are never violated. The exact set varies slightly by Forms major (e.g.
-    // UFRecordFieldValues is not present on every version), so only the tables that actually exist are cleared.
+    // UFRecords last, so foreign keys are never violated. Only tables that actually exist are cleared, keeping
+    // this resilient to schema differences between Forms versions. (UFRecordFieldValues is not a base table on
+    // any of Forms 13/16/17/18; it is listed defensively in case a build introduces one, and skipped otherwise.)
     private static readonly string[] RecordTablesLeafFirst =
     [
         "UFRecordAudit",
@@ -32,7 +36,7 @@ public class UmbracoFormsSanitiser(
         "UFRecordDataString",
         "UFRecordFieldValues",
         "UFRecordFields",
-        "UFRecords",
+        RecordsTable,
     ];
 
     public bool IsEnabled() => _options.Enable;
@@ -46,6 +50,7 @@ public class UmbracoFormsSanitiser(
         }
 
         var existingTables = await GetExistingTables(context.CancellationToken);
+        var submissionsDeleted = 0;
 
         foreach (var table in RecordTablesLeafFirst)
         {
@@ -59,11 +64,16 @@ public class UmbracoFormsSanitiser(
 
             // The table names are compile-time constants, not user input, so the raw SQL is safe.
 #pragma warning disable EF1002
-            await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]", context.CancellationToken);
+            var affected = await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]", context.CancellationToken);
 #pragma warning restore EF1002
+
+            if (string.Equals(table, RecordsTable, StringComparison.OrdinalIgnoreCase))
+            {
+                submissionsDeleted = affected;
+            }
         }
 
-        logger.LogInformation("Deleted all Umbraco Forms submissions.");
+        logger.LogInformation("Deleted {count} Umbraco Forms submission(s) and their field data.", submissionsDeleted);
     }
 
     // The tables present in the database, so version differences (and non-Forms sites) are handled without

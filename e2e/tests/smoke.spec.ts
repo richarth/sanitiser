@@ -43,5 +43,5 @@ test('sanitisation ran during startup', () => {
 test('the Forms sanitiser ran against the real Umbraco Forms schema', () => {
   // The Forms sanitiser runs raw DELETEs against the UFRecord* tables. Reaching this log line means every
   // table delete completed against the actual installed Forms version without aborting the run.
-  expect(latestLogContent()).toContain('Deleted all Umbraco Forms submissions');
+  expect(latestLogContent()).toContain('Umbraco Forms submission');
 });
