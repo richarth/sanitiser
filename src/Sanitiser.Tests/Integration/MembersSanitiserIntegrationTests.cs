@@ -1,13 +1,9 @@
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
-using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Infrastructure.Persistence.Dtos;
 using Umbraco.Community.Sanitiser.Configuration;
 using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.Replacement;
@@ -17,25 +13,9 @@ using Xunit;
 
 namespace Umbraco.Community.Sanitiser.Tests.Integration;
 
-public sealed class MembersSanitiserIntegrationTests : IDisposable
+public sealed class MembersSanitiserIntegrationTests
 {
-    private readonly SqliteConnection _connection;
-    private readonly SanitiserDbContext _dbContext;
-
-    public MembersSanitiserIntegrationTests()
-    {
-        _connection = new SqliteConnection("DataSource=:memory:");
-        _connection.Open();
-        _dbContext = new SanitiserDbContext(
-            new DbContextOptionsBuilder<SanitiserDbContext>().UseSqlite(_connection).Options);
-        _dbContext.Database.EnsureCreated();
-    }
-
-    public void Dispose()
-    {
-        _dbContext.Dispose();
-        _connection.Dispose();
-    }
+    private readonly ICacheInstructionCleaner _cacheCleaner = Substitute.For<ICacheInstructionCleaner>();
 
     [Fact]
     public async Task Anonymise_mode_replaces_every_pii_field_and_keeps_the_record()
@@ -80,19 +60,12 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task Removes_only_the_matching_cache_instructions()
+    public async Task Clears_cache_instructions_after_a_real_run()
     {
-        var refresherId = MemberCacheRefresher.UniqueId.ToString().ToLowerInvariant();
-        _dbContext.CacheInstructions.AddRange(
-            Instruction(1, $"[{{\"RefresherId\":\"{refresherId}\",\"payload\":\"jsmith\"}}]"),
-            Instruction(2, "[{\"RefresherId\":\"00000000-0000-0000-0000-000000000000\"}]"));
-        await _dbContext.SaveChangesAsync();
+        await CreateSanitiser(MemberServiceReturning(FakeMember(10, "Alice", "alice@real.com", "alice")),
+            SanitisationMode.Delete).Sanitise(Context());
 
-        await CreateSanitiser(MemberServiceReturning(), SanitisationMode.Delete).Sanitise(Context());
-
-        var remaining = _dbContext.CacheInstructions.AsNoTracking().Select(x => x.Id).ToList();
-        Assert.DoesNotContain(1, remaining);
-        Assert.Contains(2, remaining);
+        await _cacheCleaner.Received(1).Clear(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -106,22 +79,9 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
 
         memberService.DidNotReceive().Delete(Arg.Any<IMember>());
         memberService.DidNotReceive().Save(Arg.Any<IMember>());
+        await _cacheCleaner.DidNotReceive().Clear(Arg.Any<CancellationToken>());
         Assert.Equal("alice@real.com", member.Email);
         Assert.Contains(logger.Entries, e => e.Message.Contains("[DRY RUN]") && e.Message.Contains("10"));
-    }
-
-    [Fact]
-    public async Task Warns_when_records_sanitised_but_no_cache_instruction_format_matches()
-    {
-        _dbContext.CacheInstructions.Add(Instruction(1, "[{\"SomeNewFormat\":\"whatever\"}]"));
-        await _dbContext.SaveChangesAsync();
-        var logger = new ListLogger<MembersSanitiser>();
-
-        await CreateSanitiser(MemberServiceReturning(FakeMember(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete, logger: logger).Sanitise(Context());
-
-        Assert.True(logger.HasWarningContaining("cache instruction"));
-        Assert.Contains(1, _dbContext.CacheInstructions.AsNoTracking().Select(x => x.Id).ToList());
     }
 
     private MembersSanitiser CreateSanitiser(IMemberService memberService, SanitisationMode mode, string domainsToExclude = "",
@@ -134,7 +94,7 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
             DomainsToExclude = domainsToExclude
         });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
-        return new MembersSanitiser(options, replacer, memberService, _dbContext, logger ?? NullLogger<MembersSanitiser>.Instance);
+        return new MembersSanitiser(options, replacer, memberService, _cacheCleaner, logger ?? NullLogger<MembersSanitiser>.Instance);
     }
 
     private static SanitisationContext Context(bool dryRun = false) => new(dryRun, NullLogger.Instance);
@@ -151,15 +111,6 @@ public sealed class MembersSanitiserIntegrationTests : IDisposable
             });
         return service;
     }
-
-    private static CacheInstructionDto Instruction(int id, string json) => new()
-    {
-        Id = id,
-        UtcStamp = DateTime.UtcNow,
-        Instructions = json,
-        OriginIdentity = "test",
-        InstructionCount = 1
-    };
 
     private static IMember FakeMember(int id, string name, string email, string username)
     {

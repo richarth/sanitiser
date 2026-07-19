@@ -1,7 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Models.Membership;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.Sanitiser.Configuration;
@@ -15,7 +13,7 @@ public class UsersSanitiser(
     IOptions<UsersSanitiserOptions> sanitiserOptions,
     IPersonalDataReplacer personalDataReplacer,
     IUserService userService,
-    SanitiserDbContext dbContext,
+    ICacheInstructionCleaner cacheInstructionCleaner,
     ILogger<UsersSanitiser> logger)
     : ISanitiser
 {
@@ -24,16 +22,16 @@ public class UsersSanitiser(
     public async Task Sanitise(SanitisationContext context)
     {
         logger.LogInformation("Users sanitise started");
-        // sanitise all users, then remove their cached data
-        var sanitisedCount = await SanitiseAllUsers(context.DryRun, context.CancellationToken);
+        // sanitise all users, then clear cache instructions so no personal data lingers there
+        await SanitiseAllUsers(context.DryRun, context.CancellationToken);
 
         if (context.DryRun)
         {
-            logger.LogInformation("[DRY RUN] Would remove cached user data for the users listed above.");
+            logger.LogInformation("[DRY RUN] Would clear pending cache instructions.");
             return;
         }
 
-        await RemoveCachedUserData(sanitisedCount, context.CancellationToken);
+        await cacheInstructionCleaner.Clear(context.CancellationToken);
     }
 
     public bool IsEnabled()
@@ -41,7 +39,7 @@ public class UsersSanitiser(
         return _sanitiserOptions.Enable;
     }
 
-    private async Task<int> SanitiseAllUsers(bool dryRun, CancellationToken cancellationToken)
+    private async Task SanitiseAllUsers(bool dryRun, CancellationToken cancellationToken)
     {
         SanitisationMode mode = _sanitiserOptions.Mode;
 
@@ -119,51 +117,5 @@ public class UsersSanitiser(
         }
 
         logger.LogInformation("Finished sanitising users. Processed {processedCount} out of {totalUsers} users.", processedCount, allUsers.Count);
-
-        return processedCount;
-    }
-
-    private async Task RemoveCachedUserData(int sanitisedCount, CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Removing cached user data...");
-
-        // the umbracoCacheInstruction table stores the user username, so we need to remove it
-        try
-        {
-            var refresherId = UserCacheRefresher.UniqueId.ToString().ToLowerInvariant();
-            var searchString = $"%\"RefresherId\":\"{refresherId}\"%";
-
-            var instructionsToRemove = await dbContext.CacheInstructions
-                .Where(x => EF.Functions.Like(x.Instructions, searchString))
-                .ToListAsync(cancellationToken);
-
-            if (instructionsToRemove.Count > 0)
-            {
-                dbContext.CacheInstructions.RemoveRange(instructionsToRemove);
-                await dbContext.SaveChangesAsync(cancellationToken);
-                logger.LogInformation("Removed {count} cached user instructions.", instructionsToRemove.Count);
-            }
-            else if (sanitisedCount > 0 && await dbContext.CacheInstructions.AnyAsync(cancellationToken))
-            {
-                // We sanitised users and the cache instruction table has entries, yet none matched the
-                // expected refresher format. This usually means the umbracoCacheInstruction JSON format has
-                // changed for this Umbraco version and personal data may remain in that table.
-                logger.LogWarning(
-                    "Sanitised {sanitisedCount} user(s) but found no matching cache instructions to remove. " +
-                    "The umbracoCacheInstruction format may have changed for this Umbraco version; verify no " +
-                    "personal data remains in that table.",
-                    sanitisedCount);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to remove cached user data.");
-        }
-
-        logger.LogInformation("Finished removing cached user data.");
     }
 }

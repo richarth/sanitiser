@@ -39,6 +39,8 @@ internal class SanitiserComposer : IComposer
         });
 #endif
 
+        builder.Services.AddSingleton<ICacheInstructionCleaner, CacheInstructionCleaner>();
+
         builder.AddNotificationAsyncHandler<UmbracoApplicationStartingNotification, SanitizationStartupNotification>();
 
         builder.Services.Configure<SanitiserOptions>(builder.Config.GetSection(SanitiserOptions.SanitiserOptionsKey));

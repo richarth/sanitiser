@@ -25,9 +25,11 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 - **Anonymise mode.** The Members and Users sanitisers gained a `Mode` setting (`Delete` or `Anonymise`).
   `Delete` (the default) replaces personal data then deletes the record; `Anonymise` replaces personal
   data but keeps the record.
-- **Cache-cleanup drift detection.** If records were sanitised but the `umbracoCacheInstruction` table
-  contains entries that none of the expected refresher patterns match, a warning is logged — surfacing the
-  otherwise-silent case where Umbraco's cache-instruction format has changed and personal data could remain.
+- **Cache-instruction cleanup.** After sanitising, pending `umbracoCacheInstruction` entries are cleared —
+  member cache-refresh payloads can contain the (previous) username, so this stops personal data lingering
+  there. It uses Umbraco's supported `ICacheInstructionRepository.DeleteInstructionsOlderThan` rather than
+  matching the internal JSON format, which means it clears *all* pending instructions (see the README note for
+  the load-balanced implication).
 - **`DirectorySanitiser` safety guard.** The target directory must resolve to a location strictly inside the
   site content root; an empty path, the content root itself, or a path outside the site (including via `..`)
   now throws instead of deleting anything.
@@ -52,10 +54,9 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
 - Repository-level `NuGet.config` pinning restore to nuget.org.
 - Test project (`Sanitiser.Tests`, xUnit + NSubstitute). Unit tests cover the domain-exclusion gate, the
   service enable/production-override gating, and the template, Faker and AI replacers. Integration tests wire
-  the real Users/Members sanitisers and replacer against a real SQLite database (substituting only the Umbraco
-  service boundary) to verify PII is actually replaced in Anonymise mode, scrubbed before deletion in Delete
-  mode, that the Super Admin and excluded domains are untouched, and that the EF Core cache-instruction
-  cleanup removes only the matching rows.
+  the real Users/Members sanitisers and replacer (substituting the Umbraco service boundary and the cache
+  cleaner) to verify PII is actually replaced in Anonymise mode, scrubbed before deletion in Delete mode, that
+  the Super Admin and excluded domains are untouched, and that cache instructions are cleared after a run.
 - `build.yml` CI workflow that builds all target frameworks and runs the tests on push and pull request.
 - Playwright end-to-end smoke tests (`e2e/`) that boot the real V17 test site and verify the backoffice is
   served and that sanitisation runs during startup — proving the packages are safe to install in a real
