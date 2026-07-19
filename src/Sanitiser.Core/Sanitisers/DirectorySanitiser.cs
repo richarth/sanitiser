@@ -15,7 +15,7 @@ public abstract class DirectorySanitiser : ISanitiser
             return;
         }
 
-        await EmptyDirectory(directory);
+        await EmptyDirectory(directory, context.CancellationToken);
     }
 
     public abstract bool IsEnabled();
@@ -39,6 +39,8 @@ public abstract class DirectorySanitiser : ISanitiser
             throw new InvalidOperationException("DirectorySanitiser: the content root path is not available.");
         }
 
+        // Note: GetFullPath resolves the path lexically (it does not follow symbolic links), so the reparse-point
+        // check below guards against the target itself being a link that points outside the content root.
         var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(contentRootPath));
         var fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory, root));
 
@@ -49,38 +51,43 @@ public abstract class DirectorySanitiser : ISanitiser
                 $"DirectorySanitiser: refusing to empty '{fullPath}' because it is not inside the site content root '{root}'.");
         }
 
+        if (Directory.Exists(fullPath) && File.GetAttributes(fullPath).HasFlag(FileAttributes.ReparsePoint))
+        {
+            throw new InvalidOperationException(
+                $"DirectorySanitiser: refusing to empty '{fullPath}' because it is a symbolic link, which could resolve outside the site content root.");
+        }
+
         return fullPath;
     }
 
-    private static Task RemoveDirectoriesInDirectory(string? directory)
+    private static void RemoveDirectoriesInDirectory(string? directory, CancellationToken cancellationToken)
     {
         if (Directory.Exists(directory))
         {
             foreach (var subDirectory in Directory.GetDirectories(directory))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 Directory.Delete(subDirectory, true);
             }
         }
-
-        return Task.CompletedTask;
     }
 
-    private static Task RemoveFilesInDirectory(string? directory)
+    private static void RemoveFilesInDirectory(string? directory, CancellationToken cancellationToken)
     {
         if (Directory.Exists(directory))
         {
             foreach (var file in Directory.GetFiles(directory))
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 File.Delete(file);
             }
         }
-
-        return Task.CompletedTask;
     }
 
-    private static async Task EmptyDirectory(string? directory)
+    private static Task EmptyDirectory(string? directory, CancellationToken cancellationToken)
     {
-        await RemoveDirectoriesInDirectory(directory);
-        await RemoveFilesInDirectory(directory);
+        RemoveDirectoriesInDirectory(directory, cancellationToken);
+        RemoveFilesInDirectory(directory, cancellationToken);
+        return Task.CompletedTask;
     }
 }

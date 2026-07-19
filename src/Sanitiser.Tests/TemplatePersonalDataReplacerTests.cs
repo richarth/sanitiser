@@ -1,12 +1,38 @@
 using Microsoft.Extensions.Options;
 using Umbraco.Community.Sanitiser.Configuration;
 using Umbraco.Community.Sanitiser.Replacement;
+using Umbraco.Community.Sanitiser.Tests.Support;
 using Xunit;
 
 namespace Umbraco.Community.Sanitiser.Tests;
 
 public class TemplatePersonalDataReplacerTests
 {
+    [Fact]
+    public void Warns_when_a_unique_template_omits_the_index_token()
+    {
+        var logger = new ListLogger<TemplatePersonalDataReplacer>();
+
+        _ = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions
+        {
+            EmailTemplate = "anon@example.com",
+            UserNameTemplate = "login{index}"
+        }), logger);
+
+        Assert.True(logger.HasWarningContaining("EmailTemplate"));
+        Assert.False(logger.HasWarningContaining("UserNameTemplate"));
+    }
+
+    [Fact]
+    public void Does_not_warn_when_unique_templates_include_the_index_token()
+    {
+        var logger = new ListLogger<TemplatePersonalDataReplacer>();
+
+        _ = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()), logger);
+
+        Assert.DoesNotContain(logger.Entries, e => e.Level == Microsoft.Extensions.Logging.LogLevel.Warning);
+    }
+
     [Fact]
     public async Task Replace_substitutes_the_index_into_each_template()
     {

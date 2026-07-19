@@ -77,7 +77,7 @@ public class MembersSanitiser(
                     new PersonalData(member.Name, member.Email, member.Username), processedCount, cancellationToken);
 
                 member.Email = replacement.Email ?? string.Empty;
-                member.Name = replacement.Name;
+                member.Name = replacement.Name ?? string.Empty;
                 member.Username = replacement.Username ?? string.Empty;
 
                 if (mode == SanitisationMode.Delete)
@@ -111,7 +111,8 @@ public class MembersSanitiser(
     // carry, which only matters in Anonymise mode (Delete removes the whole record and its properties).
     private void AnonymiseAdditionalData(IMember member)
     {
-        // Backoffice notes about the member can contain personal data.
+        // Backoffice notes about the member can contain personal data. Cleared explicitly so it is scrubbed
+        // even when AnonymiseCustomProperties is off; the property loop below would otherwise cover it too.
         member.Comments = null;
 
         if (!_sanitiserOptions.AnonymiseCustomProperties)
@@ -119,8 +120,10 @@ public class MembersSanitiser(
             return;
         }
 
-        // Editor-defined properties (address, phone, date of birth, ...) frequently hold personal data.
-        // Clear every property except those the site has explicitly marked as safe to keep.
+        // Clear every member property except those the site has explicitly marked as safe to keep. This
+        // deliberately covers all properties — editor-defined ones (address, phone, date of birth, ...) and
+        // the built-in membership fields (comments, password-retrieval question/answer, ...) — because any of
+        // them can hold personal data.
         foreach (IProperty property in member.Properties)
         {
             if (_sanitiserOptions.PropertiesToPreserve.Contains(property.Alias, StringComparer.OrdinalIgnoreCase))
