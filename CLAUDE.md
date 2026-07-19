@@ -99,4 +99,5 @@ tagged must have a `## [N.N.N]` changelog entry**, and the whole family ships to
 in `src/Directory.Build.props`. Publishing uses the `NUGET_API_KEY` secret (a glob-scoped
 `Umbraco.Community.Sanitiser*` key); a move to NuGet Trusted Publishing (OIDC, keyless) is planned for a later
 release. Dependabot (`.github/dependabot.yml`) keeps the workflow actions current, and the workflows cache
-`~/.nuget/packages`.
+`~/.nuget/packages`. Packaging happens **only** at release: the packable projects deliberately omit
+`GeneratePackageOnBuild`, so a plain `dotnet build` (and the build CI) produces no `.nupkg`s — use `dotnet pack`.
