@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using NSubstitute;
 using Umbraco.Community.Sanitiser.collections;
 using Umbraco.Community.Sanitiser.Configuration;
+using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.sanitisers;
 using Umbraco.Community.Sanitiser.services;
 using Xunit;
@@ -12,11 +13,13 @@ namespace Umbraco.Community.Sanitiser.Tests;
 
 public class SanitizationServiceTests
 {
-    private static SanitizationService Create(SanitiserOptions options, string environment)
+    private readonly ICacheInstructionCleaner _cacheCleaner = Substitute.For<ICacheInstructionCleaner>();
+
+    private SanitizationService Create(SanitiserOptions options, string environment)
     {
         var env = Substitute.For<IHostEnvironment>();
         env.EnvironmentName = environment;
-        return new SanitizationService(Options.Create(options), env, NullLogger<SanitizationService>.Instance);
+        return new SanitizationService(Options.Create(options), env, _cacheCleaner, NullLogger<SanitizationService>.Instance);
     }
 
     private static SanitisersCollection Collection(params ISanitiser[] sanitisers) => new(() => sanitisers);
@@ -104,6 +107,36 @@ public class SanitizationServiceTests
                 .Sanitise(Collection(sanitiser), cts.Token));
 
         await sanitiser.DidNotReceive().Sanitise(Arg.Any<SanitisationContext>());
+    }
+
+    [Fact]
+    public async Task Clears_cache_instructions_once_after_a_real_run()
+    {
+        await Create(new SanitiserOptions { Enable = true }, Environments.Development)
+            .Sanitise(Collection(EnabledSanitiser()));
+
+        await _cacheCleaner.Received(1).Clear(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Does_not_clear_cache_in_dry_run()
+    {
+        await Create(new SanitiserOptions { Enable = true, DryRun = true }, Environments.Development)
+            .Sanitise(Collection(EnabledSanitiser()));
+
+        await _cacheCleaner.DidNotReceive().Clear(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Does_not_clear_cache_when_no_sanitiser_is_enabled()
+    {
+        var disabled = Substitute.For<ISanitiser>();
+        disabled.IsEnabled().Returns(false);
+
+        await Create(new SanitiserOptions { Enable = true }, Environments.Development)
+            .Sanitise(Collection(disabled));
+
+        await _cacheCleaner.DidNotReceive().Clear(Arg.Any<CancellationToken>());
     }
 
     private static ISanitiser EnabledSanitiser()

@@ -5,7 +5,6 @@ using NSubstitute;
 using Umbraco.Cms.Core.Models.Membership;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.Sanitiser.Configuration;
-using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.Replacement;
 using Umbraco.Community.Sanitiser.sanitisers;
 using Umbraco.Community.Sanitiser.Tests.Support;
@@ -15,13 +14,11 @@ namespace Umbraco.Community.Sanitiser.Tests.Integration;
 
 /// <summary>
 /// Wires the real UsersSanitiser + real TemplatePersonalDataReplacer, substituting the Umbraco IUserService
-/// boundary and the cache-instruction cleaner. Verifies the actual replace/delete/anonymise decisions and that
-/// the cache instructions are cleared after a real run.
+/// boundary. Verifies the actual replace/delete/anonymise decisions. (Cache-instruction clearing now happens
+/// once at the service level, covered by SanitizationServiceTests.)
 /// </summary>
 public sealed class UsersSanitiserIntegrationTests
 {
-    private readonly ICacheInstructionCleaner _cacheCleaner = Substitute.For<ICacheInstructionCleaner>();
-
     [Fact]
     public async Task Anonymise_mode_replaces_every_pii_field_and_keeps_the_record()
     {
@@ -79,15 +76,6 @@ public sealed class UsersSanitiserIntegrationTests
     }
 
     [Fact]
-    public async Task Clears_cache_instructions_after_a_real_run()
-    {
-        await CreateSanitiser(UserServiceReturning(FakeUser(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete).Sanitise(Context());
-
-        await _cacheCleaner.Received(1).Clear(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task Caps_processing_and_warns_when_more_records_than_MaxRecords()
     {
         IUser[] users =
@@ -123,7 +111,6 @@ public sealed class UsersSanitiserIntegrationTests
 
         userService.DidNotReceive().Delete(Arg.Any<IUser>());
         userService.DidNotReceive().Save(Arg.Any<IUser>());
-        await _cacheCleaner.DidNotReceive().Clear(Arg.Any<CancellationToken>());
         Assert.Equal("alice@real.com", user.Email);
         Assert.Contains(logger.Entries, e => e.Message.Contains("[DRY RUN]") && e.Message.Contains("10"));
     }
@@ -139,7 +126,7 @@ public sealed class UsersSanitiserIntegrationTests
             MaxRecords = maxRecords
         });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
-        return new UsersSanitiser(options, replacer, userService, _cacheCleaner, logger ?? NullLogger<UsersSanitiser>.Instance);
+        return new UsersSanitiser(options, replacer, userService, logger ?? NullLogger<UsersSanitiser>.Instance);
     }
 
     private static SanitisationContext Context(bool dryRun = false) => new(dryRun, NullLogger.Instance);

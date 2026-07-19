@@ -51,10 +51,11 @@ removed in Umbraco 18. Verify API availability across floors before using it.
 `UmbracoApplicationStartingNotification`. On startup `SanitizationService` runs — unless disabled, or in
 Production without `ProductionOverride`/`DryRun` — iterating every discovered `ISanitiser`. Each strategy uses
 the registered `IPersonalDataReplacer` to produce replacement values, then deletes (`Delete` mode) or saves
-(`Anonymise` mode) each record. Afterwards it clears pending `umbracoCacheInstruction` entries via
-`ICacheInstructionCleaner` (which calls the supported `ICacheInstructionRepository.DeleteInstructionsOlderThan`
-within a scope) because member cache-refresh payloads can contain usernames; this clears *all* pending
-instructions, not just member/user ones (see the README for the load-balanced implication).
+(`Anonymise` mode) each record. After all sanitisers have run, the service clears pending
+`umbracoCacheInstruction` entries once via `ICacheInstructionCleaner` (which calls the supported
+`ICacheInstructionRepository.DeleteInstructionsOlderThan` within a scope) because member cache-refresh payloads
+can contain usernames; this clears *all* pending instructions, not just member/user ones (see the README for
+the load-balanced implication).
 
 ### Conventions
 

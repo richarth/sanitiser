@@ -5,7 +5,6 @@ using NSubstitute;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.Sanitiser.Configuration;
-using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.Replacement;
 using Umbraco.Community.Sanitiser.sanitisers;
 using Umbraco.Community.Sanitiser.Tests.Support;
@@ -15,8 +14,6 @@ namespace Umbraco.Community.Sanitiser.Tests.Integration;
 
 public sealed class MembersSanitiserIntegrationTests
 {
-    private readonly ICacheInstructionCleaner _cacheCleaner = Substitute.For<ICacheInstructionCleaner>();
-
     [Fact]
     public async Task Anonymise_mode_replaces_every_pii_field_and_keeps_the_record()
     {
@@ -60,15 +57,6 @@ public sealed class MembersSanitiserIntegrationTests
     }
 
     [Fact]
-    public async Task Clears_cache_instructions_after_a_real_run()
-    {
-        await CreateSanitiser(MemberServiceReturning(FakeMember(10, "Alice", "alice@real.com", "alice")),
-            SanitisationMode.Delete).Sanitise(Context());
-
-        await _cacheCleaner.Received(1).Clear(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task Dry_run_makes_no_changes_but_reports_what_it_would_do()
     {
         IMember member = FakeMember(10, "Alice Real", "alice@real.com", "alice");
@@ -79,7 +67,6 @@ public sealed class MembersSanitiserIntegrationTests
 
         memberService.DidNotReceive().Delete(Arg.Any<IMember>());
         memberService.DidNotReceive().Save(Arg.Any<IMember>());
-        await _cacheCleaner.DidNotReceive().Clear(Arg.Any<CancellationToken>());
         Assert.Equal("alice@real.com", member.Email);
         Assert.Contains(logger.Entries, e => e.Message.Contains("[DRY RUN]") && e.Message.Contains("10"));
     }
@@ -94,7 +81,7 @@ public sealed class MembersSanitiserIntegrationTests
             DomainsToExclude = domainsToExclude
         });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
-        return new MembersSanitiser(options, replacer, memberService, _cacheCleaner, logger ?? NullLogger<MembersSanitiser>.Instance);
+        return new MembersSanitiser(options, replacer, memberService, logger ?? NullLogger<MembersSanitiser>.Instance);
     }
 
     private static SanitisationContext Context(bool dryRun = false) => new(dryRun, NullLogger.Instance);

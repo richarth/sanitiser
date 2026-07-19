@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.Sanitiser.Configuration;
-using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.Replacement;
 using Umbraco.Community.Sanitiser.Utility;
 
@@ -13,7 +12,6 @@ public class MembersSanitiser(
     IOptions<MembersSanitiserOptions> sanitiserOptions,
     IPersonalDataReplacer personalDataReplacer,
     IMemberService memberService,
-    ICacheInstructionCleaner cacheInstructionCleaner,
     ILogger<MembersSanitiser> logger)
     : ISanitiser
 {
@@ -21,16 +19,7 @@ public class MembersSanitiser(
 
     public async Task Sanitise(SanitisationContext context)
     {
-        // sanitise all members, then clear cache instructions so no personal data lingers there
         await SanitiseAllMembers(context.DryRun, context.CancellationToken);
-
-        if (context.DryRun)
-        {
-            logger.LogInformation("[DRY RUN] Would clear pending cache instructions.");
-            return;
-        }
-
-        await cacheInstructionCleaner.Clear(context.CancellationToken);
     }
 
     public bool IsEnabled()

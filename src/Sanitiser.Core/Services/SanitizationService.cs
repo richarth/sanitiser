@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Community.Sanitiser.collections;
 using Umbraco.Community.Sanitiser.Configuration;
+using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.sanitisers;
 
 namespace Umbraco.Community.Sanitiser.services;
@@ -10,6 +11,7 @@ namespace Umbraco.Community.Sanitiser.services;
 public class SanitizationService(
     IOptions<SanitiserOptions> options,
     IHostEnvironment hostEnvironment,
+    ICacheInstructionCleaner cacheInstructionCleaner,
     ILogger<SanitizationService> logger) : ISanitisationService
 {
     private readonly SanitiserOptions _options = options.Value;
@@ -37,6 +39,8 @@ public class SanitizationService(
 
             logger.LogInformation("Sanitization started.");
 
+            var ranAnySanitiser = false;
+
             foreach (ISanitiser sanitiser in sanitisers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -44,6 +48,7 @@ public class SanitizationService(
                 // only run enabled sanitizers
                 if (sanitiser.IsEnabled())
                 {
+                    ranAnySanitiser = true;
                     var sanitiserName = sanitiser.GetType().Name;
                     try
                     {
@@ -60,6 +65,20 @@ public class SanitizationService(
                     {
                         logger.LogError(ex, "Error running sanitiser: {sanitiserName}", sanitiserName);
                     }
+                }
+            }
+
+            // Clear cache instructions once, after all sanitisers: member cache-refresh payloads can contain
+            // personal data, and the clear is entity-agnostic so it only needs to run once per sanitisation.
+            if (ranAnySanitiser)
+            {
+                if (_options.DryRun)
+                {
+                    logger.LogInformation("[DRY RUN] Would clear pending cache instructions.");
+                }
+                else
+                {
+                    await cacheInstructionCleaner.Clear(cancellationToken);
                 }
             }
 
