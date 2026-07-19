@@ -89,6 +89,10 @@ public class UsersSanitiser(
                 }
                 else
                 {
+                    // The backoffice notes and avatar can also carry personal data; users have no
+                    // editor-defined properties, so these are the remaining personal fields to scrub.
+                    user.Comments = null;
+                    user.Avatar = null;
                     userService.Save(user);
                     logger.LogInformation("Anonymised user: {userId}", user.Id);
                 }

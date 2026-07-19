@@ -71,14 +71,32 @@ public sealed class MembersSanitiserIntegrationTests
         Assert.Contains(logger.Entries, e => e.Message.Contains("[DRY RUN]") && e.Message.Contains("10"));
     }
 
+    [Fact]
+    public async Task Anonymise_mode_clears_custom_member_properties_except_preserved()
+    {
+        IMember member = FakeMember(10, "Alice Real", "alice@real.com", "alice");
+        IProperty address = FakeProperty("address");
+        IProperty tier = FakeProperty("membershipTier");
+        var properties = new PropertyCollection(new[] { address, tier });
+        member.Properties.Returns(properties);
+        IMemberService memberService = MemberServiceReturning(member);
+
+        await CreateSanitiser(memberService, SanitisationMode.Anonymise, propertiesToPreserve: ["membershipTier"])
+            .Sanitise(Context());
+
+        member.Received().SetValue("address", null);
+        member.DidNotReceive().SetValue("membershipTier", Arg.Any<object?>());
+    }
+
     private MembersSanitiser CreateSanitiser(IMemberService memberService, SanitisationMode mode, string domainsToExclude = "",
-        ILogger<MembersSanitiser>? logger = null)
+        ILogger<MembersSanitiser>? logger = null, string[]? propertiesToPreserve = null)
     {
         var options = Options.Create(new MembersSanitiserOptions
         {
             Enable = true,
             Mode = mode,
-            DomainsToExclude = domainsToExclude
+            DomainsToExclude = domainsToExclude,
+            PropertiesToPreserve = propertiesToPreserve ?? []
         });
         var replacer = new TemplatePersonalDataReplacer(Options.Create(new TemplateReplacementOptions()));
         return new MembersSanitiser(options, replacer, memberService, logger ?? NullLogger<MembersSanitiser>.Instance);
@@ -107,5 +125,12 @@ public sealed class MembersSanitiserIntegrationTests
         member.Email = email;
         member.Username = username;
         return member;
+    }
+
+    private static IProperty FakeProperty(string alias)
+    {
+        var property = Substitute.For<IProperty>();
+        property.Alias.Returns(alias);
+        return property;
     }
 }

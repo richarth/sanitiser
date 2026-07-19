@@ -24,7 +24,11 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
     replacer can be active.
 - **Anonymise mode.** The Members and Users sanitisers gained a `Mode` setting (`Delete` or `Anonymise`).
   `Delete` (the default) replaces personal data then deletes the record; `Anonymise` replaces personal
-  data but keeps the record.
+  data but keeps the record. In `Anonymise` mode the members sanitiser also clears editor-defined member
+  properties (address, phone, ...) by default — configurable via `MembersSanitiser:AnonymiseCustomProperties`
+  and `MembersSanitiser:PropertiesToPreserve` — and the users sanitiser clears the backoffice notes and
+  avatar, so personal data outside the name/email/username fields does not linger. See the README's
+  "What is and isn't scrubbed" for the boundaries (e.g. credentials are not reset by `Anonymise`).
 - **Cache-instruction cleanup.** After sanitising, pending `umbracoCacheInstruction` entries are cleared —
   member cache-refresh payloads can contain the (previous) username, so this stops personal data lingering
   there. It uses Umbraco's supported `ICacheInstructionRepository.DeleteInstructionsOlderThan` rather than
@@ -82,6 +86,12 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   advisory was a transitive Umbraco dependency, governed by the consuming site's Umbraco version rather than
   this library (and several, such as `SQLitePCLRaw` and `MailKit`, have no fixed version even in current
   releases). Auditing of our own direct dependencies remains enabled.
+
+### Fixed
+
+- The users/members dry-run log line no longer includes the record's email address. Dry run is permitted in
+  Production and Umbraco persists Information-level logs to disk, so this had written real personal data into
+  the very log files the package exists to keep clean; it now logs only the record id.
 
 ### Migration notes
 

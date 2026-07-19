@@ -105,9 +105,13 @@ untouched:
 
 The Members and Users sanitisers support two modes, set via `Mode`:
 
-- `Delete` (the default) — replaces each record's personal data (so values lingering in audit and log
-  tables are scrubbed) and then deletes the record.
-- `Anonymise` — replaces each record's personal data but keeps the record.
+- `Delete` (the default) — replaces each record's name, email and username (so values lingering in audit and
+  log tables are scrubbed) and then deletes the record, which also removes its custom properties.
+- `Anonymise` — replaces the same personal fields but keeps the record. Because members often carry personal
+  data in editor-defined properties (address, phone, date of birth, ...), Anonymise also clears **all** member
+  properties by default, and clears the backoffice notes/avatar on users. Set `AnonymiseCustomProperties` to
+  `false` to keep member properties, or list individual aliases to keep in `PropertiesToPreserve` (matched
+  case-insensitively) — for example a non-personal `membershipTier` flag you rely on in the sanitised copy.
 
 ```json
 {
@@ -115,11 +119,18 @@ The Members and Users sanitisers support two modes, set via `Mode`:
         "Enable": true,
         "MembersSanitiser": {
             "Enable": true,
-            "Mode": "Anonymise"
+            "Mode": "Anonymise",
+            "PropertiesToPreserve": [ "membershipTier" ]
         }
     }
 }
 ```
+
+> [!IMPORTANT]
+> `Anonymise` keeps the record, so it does **not** reset passwords, external-login (OAuth) tokens or two-factor
+> secrets. In a shared non-production copy those credentials remain valid, and stored password hashes can be
+> attacked offline. Prefer `Delete` where you don't need the records to survive, and see
+> [What is and isn't scrubbed](#what-is-and-isnt-scrubbed).
 
 ### Large sites
 
@@ -222,6 +233,32 @@ root itself, or a path outside the site (including via `..` traversal) throws ra
 > environment. Before enabling please ensure you have a backup of your data and a backup of your backup.
 >
 >If there is a lot of data then the startup of your site may be delayed. Only enable when necessary.
+
+### What is and isn't scrubbed
+
+The built-in sanitisers focus on Umbraco members and backoffice users. Know the boundaries so you can decide
+whether `Anonymise` is sufficient or you need `Delete` (or additional custom sanitisers):
+
+**Handled**
+
+- Member/user name, email and username (replaced in both modes).
+- Member editor-defined properties and backoffice notes; user backoffice notes and avatar (cleared in
+  `Anonymise`; removed with the record in `Delete`).
+- Pending `umbracoCacheInstruction` payloads (see [Cache instructions](#cache-instructions)).
+
+**Not handled — known limitations**
+
+- **Credentials survive `Anonymise`.** Passwords, external-login (OAuth) tokens and two-factor secrets are
+  left intact when the record is kept. Use `Delete`, or add your own reset step, if valid credentials in the
+  copy are a concern.
+- **Historical audit/log rows aren't rewritten.** Sanitising scrubs *current* values, but rows in tables such
+  as `umbracoAudit`/`umbracoLog` that captured a name or email *as text when they were written* are not
+  retroactively updated.
+- **On-disk trace logs are not cleaned.** Umbraco writes logs to `umbraco/Logs`, which other subsystems may
+  populate with personal data. You can target them with a `DirectorySanitiser` (see
+  [Directory sanitization](#directory-sanitization)).
+- **Umbraco Forms submissions** and other third-party data stores are out of scope; add a custom `ISanitiser`
+  for those.
 
 ### Environments
 

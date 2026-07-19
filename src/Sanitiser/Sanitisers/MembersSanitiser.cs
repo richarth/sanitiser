@@ -87,6 +87,7 @@ public class MembersSanitiser(
                 }
                 else
                 {
+                    AnonymiseAdditionalData(member);
                     memberService.Save(member);
                     logger.LogInformation("Anonymised member: {memberId}", member.Id);
                 }
@@ -104,5 +105,30 @@ public class MembersSanitiser(
         }
 
         logger.LogInformation("Finished sanitising members. Processed {processedCount} out of {totalMembers} members.", processedCount, allMembers.Count);
+    }
+
+    // Name, email and username are handled by the caller. This scrubs the other personal data a member can
+    // carry, which only matters in Anonymise mode (Delete removes the whole record and its properties).
+    private void AnonymiseAdditionalData(IMember member)
+    {
+        // Backoffice notes about the member can contain personal data.
+        member.Comments = null;
+
+        if (!_sanitiserOptions.AnonymiseCustomProperties)
+        {
+            return;
+        }
+
+        // Editor-defined properties (address, phone, date of birth, ...) frequently hold personal data.
+        // Clear every property except those the site has explicitly marked as safe to keep.
+        foreach (IProperty property in member.Properties)
+        {
+            if (_sanitiserOptions.PropertiesToPreserve.Contains(property.Alias, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            member.SetValue(property.Alias, null);
+        }
     }
 }
