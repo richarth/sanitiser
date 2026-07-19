@@ -12,6 +12,7 @@ jobs:
     build:
 
         runs-on: ubuntu-latest
+        timeout-minutes: 20
 
         steps:
 
@@ -25,6 +26,14 @@ jobs:
                         8.0.x
                         9.0.x
                         10.0.x
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@v6
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'src/Directory.Packages.props', 'src/Directory.Build.props') }}
+                    restore-keys: |
+                        nuget-${{ runner.os }}-
 
             -   name: Extract changelog notes for this release
                 id: changelog
@@ -43,13 +52,8 @@ jobs:
                     echo "Extracted release notes for $VERSION:"
                     cat release-notes.md
 
-            -   name: Build packages
-                run: |
-                    dotnet build src/Sanitiser.Core/Sanitiser.Core.csproj --configuration Release
-                    dotnet build src/Sanitiser/Sanitiser.csproj --configuration Release
-                    dotnet build src/Sanitiser.Faker/Sanitiser.Faker.csproj --configuration Release
-                    dotnet build src/Sanitiser.AI/Sanitiser.AI.csproj --configuration Release
-                    dotnet build src/Sanitiser.Forms/Sanitiser.Forms.csproj --configuration Release
+            -   name: Run tests
+                run: dotnet test src/Sanitiser.Tests/Sanitiser.Tests.csproj --configuration Release
 
             -   name: Package projects
                 run: |

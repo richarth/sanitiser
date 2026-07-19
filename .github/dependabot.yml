@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keep the GitHub Actions used by the workflows current, so runtime deprecations
+  # (e.g. the Node 20 runner deprecation) are surfaced as PRs rather than run warnings.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
