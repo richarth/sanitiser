@@ -24,9 +24,9 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
     replacer can be active.
 - **Anonymise mode.** The Members and Users sanitisers gained a `Mode` setting (`Delete` or `Anonymise`).
   `Delete` (the default) replaces personal data then deletes the record; `Anonymise` replaces personal
-  data but keeps the record. In `Anonymise` mode the members sanitiser also clears member properties
-  (editor-defined ones such as address/phone, and built-in membership fields) by default — configurable via
-  `MembersSanitiser:AnonymiseCustomProperties`
+  data but keeps the record. In `Anonymise` mode the members sanitiser also clears editor-defined member
+  properties (address, phone, ...) by default, leaving the built-in membership status fields (approved,
+  locked out, login tracking) intact — configurable via `MembersSanitiser:AnonymiseCustomProperties`
   and `MembersSanitiser:PropertiesToPreserve` — and the users sanitiser clears the backoffice notes and
   avatar, so personal data outside the name/email/username fields does not linger. See the README's
   "What is and isn't scrubbed" for the boundaries (e.g. credentials are not reset by `Anonymise`).

@@ -77,7 +77,8 @@ public sealed class MembersSanitiserIntegrationTests
         IMember member = FakeMember(10, "Alice Real", "alice@real.com", "alice");
         IProperty address = FakeProperty("address");
         IProperty tier = FakeProperty("membershipTier");
-        var properties = new PropertyCollection(new[] { address, tier });
+        IProperty approved = FakeProperty("umbracoMemberApproved");
+        var properties = new PropertyCollection(new[] { address, tier, approved });
         member.Properties.Returns(properties);
         IMemberService memberService = MemberServiceReturning(member);
 
@@ -86,6 +87,8 @@ public sealed class MembersSanitiserIntegrationTests
 
         member.Received().SetValue("address", null);
         member.DidNotReceive().SetValue("membershipTier", Arg.Any<object?>());
+        // Built-in membership fields (umbracoMember* aliases) are account state, not personal data, so intact.
+        member.DidNotReceive().SetValue("umbracoMemberApproved", Arg.Any<object?>());
     }
 
     private MembersSanitiser CreateSanitiser(IMemberService memberService, SanitisationMode mode, string domainsToExclude = "",

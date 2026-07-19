@@ -15,6 +15,10 @@ public class MembersSanitiser(
     ILogger<MembersSanitiser> logger)
     : ISanitiser
 {
+    // Alias prefix Umbraco reserves for built-in membership properties (umbracoMemberComments,
+    // umbracoMemberApproved, umbracoMemberLockedOut, ...). Editor-defined properties never use it.
+    private const string BuiltInMemberPropertyPrefix = "umbracoMember";
+
     private readonly MembersSanitiserOptions _sanitiserOptions = sanitiserOptions.Value;
 
     public async Task Sanitise(SanitisationContext context)
@@ -120,13 +124,14 @@ public class MembersSanitiser(
             return;
         }
 
-        // Clear every member property except those the site has explicitly marked as safe to keep. This
-        // deliberately covers all properties — editor-defined ones (address, phone, date of birth, ...) and
-        // the built-in membership fields (comments, password-retrieval question/answer, ...) — because any of
-        // them can hold personal data.
+        // Clear editor-defined properties (address, phone, date of birth, ...), which frequently hold personal
+        // data. Built-in membership fields (the umbracoMember* aliases) are account state, not personal data,
+        // so they are left intact — bar notes, which are cleared explicitly above. The site's own preserve
+        // list is honoured too.
         foreach (IProperty property in member.Properties)
         {
-            if (_sanitiserOptions.PropertiesToPreserve.Contains(property.Alias, StringComparer.OrdinalIgnoreCase))
+            if (property.Alias.StartsWith(BuiltInMemberPropertyPrefix, StringComparison.OrdinalIgnoreCase)
+                || _sanitiserOptions.PropertiesToPreserve.Contains(property.Alias, StringComparer.OrdinalIgnoreCase))
             {
                 continue;
             }

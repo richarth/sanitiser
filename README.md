@@ -108,10 +108,12 @@ The Members and Users sanitisers support two modes, set via `Mode`:
 - `Delete` (the default) — replaces each record's name, email and username (so values lingering in audit and
   log tables are scrubbed) and then deletes the record, which also removes its custom properties.
 - `Anonymise` — replaces the same personal fields but keeps the record. Because members often carry personal
-  data in editor-defined properties (address, phone, date of birth, ...), Anonymise also clears **all** member
-  properties by default, and clears the backoffice notes/avatar on users. Set `AnonymiseCustomProperties` to
-  `false` to keep member properties, or list individual aliases to keep in `PropertiesToPreserve` (matched
-  case-insensitively) — for example a non-personal `membershipTier` flag you rely on in the sanitised copy.
+  data in editor-defined properties (address, phone, date of birth, ...), Anonymise also clears those member
+  properties by default, along with the member notes; on users it clears the backoffice notes and avatar. The
+  built-in membership *status* fields (approved, locked out, login tracking) are left intact, since they are
+  account state rather than personal data. Set `AnonymiseCustomProperties` to `false` to keep member
+  properties, or list individual aliases to keep in `PropertiesToPreserve` (matched case-insensitively) — for
+  example a non-personal `membershipTier` flag you rely on in the sanitised copy.
 
 ```json
 {
