@@ -5,25 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.0] - Unreleased
+## [0.5.0] - 2026-07-19
 
-### Added
-
-- **`Umbraco.Community.Sanitiser.Forms`.** A new optional package that deletes Umbraco Forms submissions on
-  startup, for sites that use Umbraco Forms. It removes every form record and its field data via
-  `Sanitiser.Core`'s database context — clearing only the record tables that exist on the installed Forms
-  version — and, when `FormsSanitiser:Uploads` is enabled (the default), empties the Forms upload directory
-  (`FormsSanitiser:UploadsPath`, default `wwwroot/media/forms/upload`, for sites that store uploads elsewhere).
-  There is no anonymise mode (form fields are arbitrary, so submissions are deleted outright); it reports how
-  many submissions it removed, and `DryRun` (which previews the count) and cancellation are honoured. It clears
-  Forms' default storage only — submissions kept in a custom Forms data source are out of scope. Configured
-  under `Sanitiser:FormsSanitiser`, it multi-targets Umbraco Forms 13/16/17/18 (.NET 8/9/10) and is exercised
-  by the e2e test sites. The package began as a separate repository and was merged in with its history preserved.
-
-## [0.5.0] - Unreleased
-
-This release splits the single `Umbraco.Community.Sanitiser` package into a family of packages and
-lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-based).
+This release splits the single `Umbraco.Community.Sanitiser` package into a family of packages, adds an
+Umbraco Forms sanitiser, and lays the groundwork for pluggable personal-data replacement (e.g. Faker- or
+AI-based).
 
 ### Added
 
@@ -37,6 +23,16 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
     the number of model calls, and makes each record's email and username unique regardless of the model
     output. The `Faker` and `AI` packages are opt-in and depend on Core; install only one, as only one
     replacer can be active.
+  - `Umbraco.Community.Sanitiser.Forms` — optional package that deletes Umbraco Forms submissions and their
+    uploaded files. Depends on Core; install only on sites that use Umbraco Forms.
+- **Umbraco Forms sanitiser** (`Umbraco.Community.Sanitiser.Forms`). Deletes Umbraco Forms submissions on
+  startup — every form record and its field data, plus (when `FormsSanitiser:Uploads` is enabled, the default)
+  the Forms upload directory (`FormsSanitiser:UploadsPath`, default `wwwroot/media/forms/upload`). Only the
+  record tables present on the installed Forms version are touched, and it reports how many submissions it
+  removed. There is no anonymise mode (form fields are arbitrary, so submissions are deleted outright); `DryRun`
+  (which previews the count) and cancellation are honoured. It clears Forms' default storage only — submissions
+  kept in a custom Forms data source are out of scope. Configured under `Sanitiser:FormsSanitiser`; multi-targets
+  Umbraco Forms 13/16/17/18 (.NET 8/9/10).
 - **Backoffice users sanitiser.** A new `UsersSanitiser` sanitises Umbraco backoffice users (the Super Admin is
   always excluded), alongside the members sanitiser that existed before. Enable it under `Sanitiser:UsersSanitiser`.
 - **Anonymise mode.** The members and users sanitisers support a `Mode` setting (`Delete` or `Anonymise`).
@@ -136,7 +132,7 @@ lays the groundwork for pluggable personal-data replacement (e.g. Faker- or AI-b
   typo, now `Umbraco.Community.Sanitiser`), which is binary-breaking for any consumer with a hard assembly
   reference.
 - Requires Umbraco 13.0+ (.NET 8), 15.0+ (.NET 9), or 17.0+ (.NET 10). The optional `AI` package requires
-  Umbraco 17.4+/18.
+  Umbraco 17.4+/18; the optional `Forms` package requires Umbraco Forms (13/16/17/18).
 
 ## [0.4.6] and earlier
 
