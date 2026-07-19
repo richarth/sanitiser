@@ -21,9 +21,6 @@ internal class SanitiserComposer : IComposer
     public void Compose(IUmbracoBuilder builder)
     {
         builder.Sanitisers().Add(() => builder.TypeLoader.GetTypes<ISanitiser>());
-        // builder
-        //     .WithCollectionBuilder<SanitisersCollectionBuilder>()
-        //     .Add(() => builder.TypeLoader.GetTypes<ISanitiser>());
 
         builder.Services.AddSingleton<ISanitisationService, SanitizationService>();
 
