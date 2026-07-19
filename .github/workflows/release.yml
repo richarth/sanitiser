@@ -49,6 +49,7 @@ jobs:
                     dotnet build src/Sanitiser/Sanitiser.csproj --configuration Release
                     dotnet build src/Sanitiser.Faker/Sanitiser.Faker.csproj --configuration Release
                     dotnet build src/Sanitiser.AI/Sanitiser.AI.csproj --configuration Release
+                    dotnet build src/Sanitiser.Forms/Sanitiser.Forms.csproj --configuration Release
 
             -   name: Package projects
                 run: |
@@ -56,6 +57,7 @@ jobs:
                     dotnet pack src/Sanitiser/Sanitiser.csproj --configuration Release
                     dotnet pack src/Sanitiser.Faker/Sanitiser.Faker.csproj --configuration Release
                     dotnet pack src/Sanitiser.AI/Sanitiser.AI.csproj --configuration Release
+                    dotnet pack src/Sanitiser.Forms/Sanitiser.Forms.csproj --configuration Release
 
             -   name: Create GitHub release
                 env:

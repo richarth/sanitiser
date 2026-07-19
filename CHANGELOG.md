@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - Unreleased
+
+### Added
+
+- **`Umbraco.Community.Sanitiser.Forms`.** A new optional package that deletes Umbraco Forms submissions on
+  startup, for sites that use Umbraco Forms. It removes every form record and its field data via
+  `Sanitiser.Core`'s database context — clearing only the record tables that exist on the installed Forms
+  version — and, when `FormsSanitiser:Uploads` is enabled (the default), empties the Forms upload directory.
+  There is no anonymise mode (form fields are arbitrary, so submissions are deleted outright); `DryRun` and
+  cancellation are honoured. Configured under `Sanitiser:FormsSanitiser`, it multi-targets Umbraco Forms
+  13/16/17/18 (.NET 8/9/10) and is exercised by the e2e test sites. The package began as a separate repository
+  and was merged in with its history preserved.
+
 ## [0.5.0] - Unreleased
 
 This release splits the single `Umbraco.Community.Sanitiser` package into a family of packages and
