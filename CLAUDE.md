@@ -80,6 +80,9 @@ the load-balanced implication).
   nuget.org.
 - Keep `CHANGELOG.md` updated — the release workflow extracts the tagged version's section into the GitHub
   release.
+- **Branching:** `develop` is the working/integration branch; `main` is the released branch. Branch off
+  `develop` and open PRs into `develop`. `main` only receives release PRs from `develop` plus the version tags,
+  so don't commit or push directly to `main` (contributor guidance lives in `CONTRIBUTING.md`).
 
 ## Test sites and CI
 

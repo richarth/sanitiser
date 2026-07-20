@@ -455,6 +455,12 @@ public class MyReplacerComposer : IComposer
 
 The original values are passed in so your implementation can derive realistic replacements from them.
 
+## Contributing
+
+Contributions are welcome! Please open pull requests against the **`develop`** branch (not `main`) — `main` is
+the released branch and only changes via a release. See [CONTRIBUTING.md](CONTRIBUTING.md) for build/test
+commands and details.
+
 ## Acknowledgements
 
 ### Logo
