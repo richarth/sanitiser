@@ -1,53 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
-    <ContentTargetFolders>.</ContentTargetFolders>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <Product>Umbraco.Community.Sanitiser</Product>
     <PackageId>Umbraco.Community.Sanitiser</PackageId>
     <Title>Sanitiser</Title>
-    <Description>When enabled, this package will automatically remove personal data from your Umbraco website on startup.</Description>
-    <PackageTags>umbraco;umbraco-marketplace</PackageTags>
+    <Description>When enabled, this package automatically removes or anonymises personal data (users and members) from your Umbraco website on startup.</Description>
     <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.4.6</Version>
-    <Authors>Richard Thompson</Authors>
-    <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
-    <PackageProjectUrl>https://github.com/richarth/sanitiser</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/richarth/sanitiser</RepositoryUrl>
-    <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>logo.png</PackageIcon>
-    <AssemblyName>Umbracro.Community.Sanitiser</AssemblyName>
-    <Platform>AnyCPU</Platform>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AssemblyName>Umbraco.Community.Sanitiser</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.8.5,)"/>
-    <PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.8.5,)"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\docs\assets\img\logo.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\..\docs\README_nuget.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="appsettings-schema.Sanitiser.json">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
+    <PackageReference Include="JetBrains.Annotations" />
+    <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
   </ItemGroup>
 
 </Project>

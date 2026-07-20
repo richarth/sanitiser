@@ -1,0 +1,27 @@
+<Project>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Audit only our own direct dependencies. The transitive graph belongs to Umbraco and is
+         governed by the consuming site's Umbraco version, not this library. -->
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <Version>0.5.0</Version>
+    <Authors>Richard Thompson</Authors>
+    <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Richard Thompson</Copyright>
+    <PackageProjectUrl>https://github.com/richarth/sanitiser</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/richarth/sanitiser</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>umbraco;umbraco-marketplace</PackageTags>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageReadmeFile>README_nuget.md</PackageReadmeFile>
+    <PackageReleaseNotes>See https://github.com/richarth/sanitiser/blob/main/CHANGELOG.md</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <!-- The test-site harnesses reference full Umbraco.Cms/Forms at pinned versions, whose known advisories are
+       governed by the consuming site's Umbraco version rather than this library and are not shipped. Silence the
+       vulnerability warnings there so they don't drown out warnings in the packages we actually ship. -->
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('TestSite'))">
+    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
+  </PropertyGroup>
+</Project>

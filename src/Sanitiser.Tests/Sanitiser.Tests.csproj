@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- net10.0 so the suite can reference Sanitiser.AI (net10-only). The logic under test is
+         framework-agnostic, so a single TFM is sufficient for these unit tests. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="NSubstitute" />
+    <!-- Real SQLite for integration tests of the EF Core cache-instruction cleanup. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
+    <ProjectReference Include="..\Sanitiser\Sanitiser.csproj" />
+    <ProjectReference Include="..\Sanitiser.Faker\Sanitiser.Faker.csproj" />
+    <ProjectReference Include="..\Sanitiser.AI\Sanitiser.AI.csproj" />
+    <ProjectReference Include="..\Sanitiser.Forms\Sanitiser.Forms.csproj" />
+  </ItemGroup>
+
+</Project>

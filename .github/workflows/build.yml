@@ -1,0 +1,49 @@
+name: Build
+
+on:
+    push:
+        branches: [ main, develop ]
+    pull_request:
+
+permissions:
+    contents: read
+
+# Cancel an in-progress run when a newer commit is pushed to the same branch/PR.
+concurrency:
+    group: build-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+
+            -   name: Checkout repository
+                uses: actions/checkout@v7
+
+            -   name: Setup .NET
+                uses: actions/setup-dotnet@v6
+                with:
+                    # The .NET 10 SDK builds and tests all target frameworks (net8/net9/net10); the older SDKs
+                    # are only needed to *run* older apps, which this workflow doesn't (the tests are net10).
+                    dotnet-version: 10.0.x
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@v6
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'src/Directory.Packages.props', 'src/Directory.Build.props') }}
+                    restore-keys: |
+                        nuget-${{ runner.os }}-
+
+            -   name: Restore
+                run: dotnet restore src/Sanitiser.sln
+
+            -   name: Build
+                run: dotnet build src/Sanitiser.sln --configuration Release --no-restore
+
+            -   name: Test
+                run: dotnet test src/Sanitiser.sln --configuration Release --no-build --verbosity normal

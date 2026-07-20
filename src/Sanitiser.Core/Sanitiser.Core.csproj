@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <ContentTargetFolders>.</ContentTargetFolders>
+    <Product>Umbraco.Community.Sanitiser.Core</Product>
+    <PackageId>Umbraco.Community.Sanitiser.Core</PackageId>
+    <Title>Sanitiser Core</Title>
+    <Description>Core interfaces and orchestration for the Sanitiser package family. Provides the ISanitiser extension point, auto-discovery, and base classes for building sanitisation strategies for Umbraco.</Description>
+    <RootNamespace>Umbraco.Community.Sanitiser</RootNamespace>
+    <AssemblyName>Umbraco.Community.Sanitiser.Core</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Versions are centralised in ../Directory.Packages.props. Umbraco.Cms.Persistence.EFCore is versioned
+       per target framework there, transitively providing Umbraco.Cms.Core/Infrastructure and the EF Core
+       providers for the matching major. -->
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" />
+    <PackageReference Include="Umbraco.Cms.Persistence.EFCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings-schema.Sanitiser.json">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
+  </ItemGroup>
+
+</Project>

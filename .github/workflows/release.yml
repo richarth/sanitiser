@@ -5,26 +5,71 @@ on:
         tags:
             - "[0-9]+.[0-9]+.[0-9]+"
 
+permissions:
+    contents: write
+
 jobs:
     build:
 
         runs-on: ubuntu-latest
+        timeout-minutes: 20
 
         steps:
 
             -   name: Checkout repository
-                uses: actions/checkout@v4
+                uses: actions/checkout@v7
 
             -   name: Setup .NET
-                uses: actions/setup-dotnet@v4
+                uses: actions/setup-dotnet@v6
                 with:
-                    dotnet-version: 8.0.x
+                    # The .NET 10 SDK builds, tests and packs all target frameworks (net8/net9/net10); the older
+                    # SDKs are only needed to *run* older apps, which the release doesn't.
+                    dotnet-version: 10.0.x
 
-            -   name: Build project
-                run: dotnet build src/Sanitiser/Sanitiser.csproj --configuration Release
+            -   name: Cache NuGet packages
+                uses: actions/cache@v6
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'src/Directory.Packages.props', 'src/Directory.Build.props') }}
+                    restore-keys: |
+                        nuget-${{ runner.os }}-
 
-            -   name: Package project
-                run: dotnet pack src/Sanitiser/Sanitiser.csproj --configuration Release
+            -   name: Extract changelog notes for this release
+                id: changelog
+                run: |
+                    VERSION="${GITHUB_REF_NAME}"
+                    NOTES=$(awk -v ver="$VERSION" '
+                        $0 ~ "^## \\[" ver "\\]" { flag=1; next }
+                        flag && /^## \[/ { flag=0 }
+                        flag { print }
+                    ' CHANGELOG.md)
+                    if [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
+                        echo "::error::No CHANGELOG.md section found for version $VERSION. Add a '## [$VERSION]' entry before tagging."
+                        exit 1
+                    fi
+                    echo "$NOTES" > release-notes.md
+                    echo "Extracted release notes for $VERSION:"
+                    cat release-notes.md
+
+            -   name: Run tests
+                run: dotnet test src/Sanitiser.Tests/Sanitiser.Tests.csproj --configuration Release
+
+            -   name: Package projects
+                run: |
+                    dotnet pack src/Sanitiser.Core/Sanitiser.Core.csproj --configuration Release
+                    dotnet pack src/Sanitiser/Sanitiser.csproj --configuration Release
+                    dotnet pack src/Sanitiser.Faker/Sanitiser.Faker.csproj --configuration Release
+                    dotnet pack src/Sanitiser.AI/Sanitiser.AI.csproj --configuration Release
+                    dotnet pack src/Sanitiser.Forms/Sanitiser.Forms.csproj --configuration Release
+
+            -   name: Create GitHub release
+                env:
+                    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run: |
+                    gh release create "${GITHUB_REF_NAME}" \
+                        --title "${GITHUB_REF_NAME}" \
+                        --notes-file release-notes.md \
+                        $(find . -path '*/bin/Release/*.nupkg')
 
             -   name: Push to NuGet
-                run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+                run: dotnet nuget push **/*.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate

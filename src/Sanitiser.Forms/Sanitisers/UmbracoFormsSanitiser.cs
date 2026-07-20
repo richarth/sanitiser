@@ -1,0 +1,112 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Umbraco.Community.Sanitiser.Forms.Configuration;
+using Umbraco.Community.Sanitiser.Persistence;
+using Umbraco.Community.Sanitiser.sanitisers;
+
+namespace Umbraco.Community.Sanitiser.Forms.Sanitisers;
+
+/// <summary>
+/// Deletes all Umbraco Forms submissions. Form submissions are user-entered personal data (names, emails,
+/// messages, ...), so a sanitised non-production copy should not retain them.
+/// </summary>
+public class UmbracoFormsSanitiser(
+    IOptions<FormsSanitiserOptions> options,
+    SanitiserDbContext dbContext,
+    ILogger<UmbracoFormsSanitiser> logger) : ISanitiser
+{
+    private readonly FormsSanitiserOptions _options = options.Value;
+
+    // The parent submission table; its row count is the number of submissions removed.
+    private const string RecordsTable = "UFRecords";
+
+    // Umbraco Forms stores each submission across these tables. They are emptied leaf-first, with the parent
+    // UFRecords last, so foreign keys are never violated. Only tables that actually exist are cleared, keeping
+    // this resilient to schema differences between Forms versions. (UFRecordFieldValues is not a base table on
+    // any of Forms 13/16/17/18; it is listed defensively in case a build introduces one, and skipped otherwise.)
+    private static readonly string[] RecordTablesLeafFirst =
+    [
+        "UFRecordAudit",
+        "UFRecordWorkflowAudit",
+        "UFRecordDataBit",
+        "UFRecordDataDateTime",
+        "UFRecordDataInteger",
+        "UFRecordDataLongString",
+        "UFRecordDataString",
+        "UFRecordFieldValues",
+        "UFRecordFields",
+        RecordsTable,
+    ];
+
+    public bool IsEnabled() => _options.Enable;
+
+    public async Task Sanitise(SanitisationContext context)
+    {
+        var existingTables = await GetExistingTables(context.CancellationToken);
+
+        if (context.DryRun)
+        {
+            var submissions = existingTables.Contains(RecordsTable)
+                ? await CountRows(RecordsTable, context.CancellationToken)
+                : 0;
+            context.Logger.LogInformation(
+                "[DRY RUN] Would delete {count} Umbraco Forms submission(s) and their field data.", submissions);
+            return;
+        }
+
+        var submissionsDeleted = 0;
+
+        foreach (var table in RecordTablesLeafFirst)
+        {
+            if (!existingTables.Contains(table))
+            {
+                // Not part of this Umbraco Forms version's schema; nothing to clear.
+                continue;
+            }
+
+            context.CancellationToken.ThrowIfCancellationRequested();
+
+            // The table names are compile-time constants, not user input, so the raw SQL is safe.
+#pragma warning disable EF1002
+            var affected = await dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM [{table}]", context.CancellationToken);
+#pragma warning restore EF1002
+
+            if (string.Equals(table, RecordsTable, StringComparison.OrdinalIgnoreCase))
+            {
+                submissionsDeleted = affected;
+            }
+        }
+
+        logger.LogInformation("Deleted {count} Umbraco Forms submission(s) and their field data.", submissionsDeleted);
+    }
+
+    // The tables present in the database, so version differences (and non-Forms sites) are handled without
+    // failing a DELETE against a table that does not exist. Umbraco runs on SQL Server or SQLite.
+    private async Task<HashSet<string>> GetExistingTables(CancellationToken cancellationToken)
+    {
+        var isSqlite = (dbContext.Database.ProviderName ?? string.Empty)
+            .Contains("Sqlite", StringComparison.OrdinalIgnoreCase);
+
+        var query = isSqlite
+            ? "SELECT name AS Value FROM sqlite_master WHERE type = 'table'"
+            : "SELECT TABLE_NAME AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+
+        // The query is one of two fixed literals, not user input, so the raw SQL is safe.
+#pragma warning disable EF1002
+        List<string> names = await dbContext.Database.SqlQueryRaw<string>(query).ToListAsync(cancellationToken);
+#pragma warning restore EF1002
+        return new HashSet<string>(names, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private async Task<int> CountRows(string table, CancellationToken cancellationToken)
+    {
+        // The table name is a compile-time constant, not user input, so the raw SQL is safe. COUNT(*) is int
+        // on SQL Server, so read it as int (SQLite's wider count value still fits for any realistic table).
+#pragma warning disable EF1002
+        return await dbContext.Database
+            .SqlQueryRaw<int>($"SELECT COUNT(*) AS Value FROM [{table}]")
+            .SingleAsync(cancellationToken);
+#pragma warning restore EF1002
+    }
+}

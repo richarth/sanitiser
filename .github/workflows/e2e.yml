@@ -1,0 +1,88 @@
+name: E2E
+
+# Deliberately NOT triggered on push or pull_request: each run boots a real Umbraco site and takes minutes, so
+# it is kept off the standard CI path. Run it on demand or nightly instead.
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: '0 3 * * *'   # nightly at 03:00 UTC
+
+permissions:
+    contents: read
+
+jobs:
+    e2e:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    -   umbraco: "13"
+                        project: "src/Sanitiser.TestSite.V13/Sanitiser.TestSite.v13.csproj"
+                    -   umbraco: "16"
+                        project: "src/Sanitiser.TestSite.V16/Sanitiser.TestSite.v16.csproj"
+                    -   umbraco: "17"
+                        project: "src/Sanitiser.TestSite.V17/Sanitiser.TestSite.v17.csproj"
+                    -   umbraco: "18"
+                        project: "src/Sanitiser.TestSite.V18/Sanitiser.TestSite.v18.csproj"
+
+        name: E2E (Umbraco ${{ matrix.umbraco }})
+
+        env:
+            SITE_PROJECT: ${{ matrix.project }}
+
+        steps:
+
+            -   name: Checkout repository
+                uses: actions/checkout@v7
+
+            -   name: Setup .NET
+                uses: actions/setup-dotnet@v6
+                with:
+                    dotnet-version: |
+                        8.0.x
+                        9.0.x
+                        10.0.x
+
+            -   name: Cache NuGet packages
+                uses: actions/cache@v6
+                with:
+                    path: ~/.nuget/packages
+                    key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'src/Directory.Packages.props', 'src/Directory.Build.props') }}
+                    restore-keys: |
+                        nuget-${{ runner.os }}-
+
+            -   name: Setup Node
+                uses: actions/setup-node@v7
+                with:
+                    node-version: 22
+                    cache: npm
+                    cache-dependency-path: e2e/package-lock.json
+
+            # Build the test site up front so the Playwright web server launches it quickly rather than
+            # spending the readiness timeout compiling.
+            -   name: Build the test site
+                run: dotnet build "${{ matrix.project }}" --configuration Release
+
+            -   name: Install Playwright and browser
+                working-directory: e2e
+                run: |
+                    npm ci
+                    npx playwright install --with-deps chromium
+
+            -   name: Run end-to-end smoke tests
+                working-directory: e2e
+                run: npm test
+
+            -   name: Upload diagnostics on failure
+                if: failure()
+                uses: actions/upload-artifact@v7
+                with:
+                    name: e2e-diagnostics-umbraco-${{ matrix.umbraco }}
+                    path: |
+                        e2e/playwright-report/
+                        e2e/test-results/
+                        src/Sanitiser.TestSite.V*/umbraco/Logs/
+                    retention-days: 7
