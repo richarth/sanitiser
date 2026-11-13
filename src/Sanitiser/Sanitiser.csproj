@@ -21,4 +21,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
+  </ItemGroup>
+
 </Project>
