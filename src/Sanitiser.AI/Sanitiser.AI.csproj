@@ -16,4 +16,15 @@
     <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="appsettings-schema.Sanitiser.AI.json">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="buildTransitive\**" PackagePath="buildTransitive"/>
+  </ItemGroup>
+
 </Project>

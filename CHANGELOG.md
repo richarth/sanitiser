@@ -79,6 +79,9 @@ AI-based).
 
 ### Changed
 
+- Each package now ships its own `appsettings` schema (for editor IntelliSense) covering only its own settings:
+  Core has the top-level options and `Replacement`, the main package has `UsersSanitiser`/`MembersSanitiser`,
+  and `Sanitiser.AI` has `AiReplacement` (Forms already had its own).
 - Members are now scrubbed (name, email and username replaced) before deletion; previously they were deleted
   without their lingering audit/log-table values being scrubbed.
 - **Cache-instruction cleanup reworked.** Clearing personal data from `umbracoCacheInstruction` (member
