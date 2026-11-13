@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -7,6 +8,7 @@ using Umbraco.Community.Sanitiser.Configuration;
 using Umbraco.Community.Sanitiser.Persistence;
 using Umbraco.Community.Sanitiser.sanitisers;
 using Umbraco.Community.Sanitiser.services;
+using Umbraco.Community.Sanitiser.Tests.Support;
 using Xunit;
 
 namespace Umbraco.Community.Sanitiser.Tests;
@@ -15,11 +17,11 @@ public class SanitizationServiceTests
 {
     private readonly ICacheInstructionCleaner _cacheCleaner = Substitute.For<ICacheInstructionCleaner>();
 
-    private SanitizationService Create(SanitiserOptions options, string environment)
+    private SanitizationService Create(SanitiserOptions options, string environment, ILogger<SanitizationService>? logger = null)
     {
         var env = Substitute.For<IHostEnvironment>();
         env.EnvironmentName = environment;
-        return new SanitizationService(Options.Create(options), env, _cacheCleaner, NullLogger<SanitizationService>.Instance);
+        return new SanitizationService(Options.Create(options), env, _cacheCleaner, logger ?? NullLogger<SanitizationService>.Instance);
     }
 
     private static SanitisersCollection Collection(params ISanitiser[] sanitisers) => new(() => sanitisers);
@@ -93,6 +95,65 @@ public class SanitizationServiceTests
             .Sanitise(Collection(failing, ok));
 
         await ok.Received(1).Sanitise(Arg.Any<SanitisationContext>());
+    }
+
+    private static ISanitiser FailingSanitiser()
+    {
+        var failing = EnabledSanitiser();
+        failing.Sanitise(Arg.Any<SanitisationContext>()).Returns(Task.FromException(new InvalidOperationException("boom")));
+        return failing;
+    }
+
+    [Fact]
+    public async Task Logs_a_summary_error_naming_the_failed_sanitisers()
+    {
+        var logger = new ListLogger<SanitizationService>();
+
+        await Create(new SanitiserOptions { Enable = true }, Environments.Development, logger)
+            .Sanitise(Collection(FailingSanitiser(), EnabledSanitiser()));
+
+        Assert.Contains(logger.Entries, entry =>
+            entry.Level == LogLevel.Error
+            && entry.Message.Contains("1 failed sanitiser", StringComparison.Ordinal)
+            && entry.Message.Contains("Personal data may remain", StringComparison.Ordinal));
+        Assert.DoesNotContain(logger.Entries, entry => entry.Message == "Sanitization finished.");
+    }
+
+    [Fact]
+    public async Task Does_not_throw_on_failure_by_default()
+    {
+        var exception = await Record.ExceptionAsync(() =>
+            Create(new SanitiserOptions { Enable = true }, Environments.Development)
+                .Sanitise(Collection(FailingSanitiser())));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task Throws_after_running_every_sanitiser_when_fail_on_error_is_set()
+    {
+        var ok = EnabledSanitiser();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Create(new SanitiserOptions { Enable = true, FailOnError = true }, Environments.Development)
+                .Sanitise(Collection(FailingSanitiser(), ok)));
+
+        // The remaining sanitisers and the cache cleanup still run before startup is stopped.
+        await ok.Received(1).Sanitise(Arg.Any<SanitisationContext>());
+        await _cacheCleaner.Received(1).Clear(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Does_not_throw_when_fail_on_error_is_set_and_nothing_fails()
+    {
+        var logger = new ListLogger<SanitizationService>();
+
+        var exception = await Record.ExceptionAsync(() =>
+            Create(new SanitiserOptions { Enable = true, FailOnError = true }, Environments.Development, logger)
+                .Sanitise(Collection(EnabledSanitiser())));
+
+        Assert.Null(exception);
+        Assert.Contains(logger.Entries, entry => entry.Message == "Sanitization finished.");
     }
 
     [Fact]

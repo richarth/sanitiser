@@ -231,6 +231,9 @@ public class MyCustomDirectorySanitiser : DirectorySanitiser
 `GetDirectoryPath` may be relative (resolved against the site content root) or absolute, but as a safety guard
 the target must be a directory **strictly inside the site content root**. Returning an empty path, the content
 root itself, or a path outside the site (including via `..` traversal) throws rather than deleting anything.
+It also throws if the target, or any folder on the way to it below the content root, is a symbolic link, since
+that could resolve to somewhere outside the site. Symlinks *inside* the target are removed as links; what they
+point to is left alone.
 
 ### Umbraco Forms
 
@@ -294,6 +297,24 @@ whether `Anonymise` is sufficient or you need `Delete` (or additional custom san
 - **Umbraco Forms submissions** are handled by the optional `Umbraco.Community.Sanitiser.Forms` package (see
   [Umbraco Forms](#umbraco-forms)). Other third-party data stores are out of scope; add a custom `ISanitiser`
   for those.
+
+### When a sanitiser fails
+
+By default a sanitiser that throws is logged and the remaining sanitisers still run, so the site starts either
+way. After the run, a single error names the failed sanitisers and warns that personal data may remain, so look
+for it in your logs. If you would rather the site refuse to start with unsanitised data, set `FailOnError`:
+
+```json
+{
+    "Sanitiser": {
+        "Enable": true,
+        "FailOnError": true
+    }
+}
+```
+
+With `FailOnError`, every sanitiser (and the cache-instruction cleanup) still runs first, then startup is
+stopped with an exception if any of them failed.
 
 ### Environments
 

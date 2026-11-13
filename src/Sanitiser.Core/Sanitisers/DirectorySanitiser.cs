@@ -40,7 +40,8 @@ public abstract class DirectorySanitiser : ISanitiser
         }
 
         // Note: GetFullPath resolves the path lexically (it does not follow symbolic links), so the reparse-point
-        // check below guards against the target itself being a link that points outside the content root.
+        // check below guards against the target, or any folder on the way to it, being a link that points outside
+        // the content root.
         var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(contentRootPath));
         var fullPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory, root));
 
@@ -51,10 +52,20 @@ public abstract class DirectorySanitiser : ISanitiser
                 $"DirectorySanitiser: refusing to empty '{fullPath}' because it is not inside the site content root '{root}'.");
         }
 
-        if (Directory.Exists(fullPath) && File.GetAttributes(fullPath).HasFlag(FileAttributes.ReparsePoint))
+        // Check every component below the content root, not just the target: a symlinked parent folder (for
+        // example wwwroot/media pointing elsewhere) would otherwise let a lexically-inside path empty a directory
+        // outside the site. The root itself and its own ancestors are deliberately not checked, since a deploy may
+        // legitimately sit behind a symlink (including the temp directory on macOS).
+        var current = root;
+        foreach (var segment in Path.GetRelativePath(root, fullPath).Split(Path.DirectorySeparatorChar))
         {
-            throw new InvalidOperationException(
-                $"DirectorySanitiser: refusing to empty '{fullPath}' because it is a symbolic link, which could resolve outside the site content root.");
+            current = Path.Combine(current, segment);
+
+            if (Directory.Exists(current) && File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
+            {
+                throw new InvalidOperationException(
+                    $"DirectorySanitiser: refusing to empty '{fullPath}' because '{current}' is a symbolic link, which could resolve outside the site content root.");
+            }
         }
 
         return fullPath;

@@ -37,7 +37,7 @@ test('the backoffice renders in the browser', async ({ page }) => {
 });
 
 test('sanitisation ran during startup', () => {
-  expect(latestLogContent()).toContain('Sanitization finished');
+  expect(latestLogContent()).toContain('Sanitization finished.');
 });
 
 test('the Forms sanitiser ran against the real Umbraco Forms schema', () => {
