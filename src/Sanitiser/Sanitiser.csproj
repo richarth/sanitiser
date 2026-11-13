@@ -14,4 +14,11 @@
     <ProjectReference Include="..\Sanitiser.Core\Sanitiser.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="appsettings-schema.Sanitiser.Users.json">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
 </Project>
