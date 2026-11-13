@@ -30,6 +30,11 @@ public sealed class DirectorySanitiserTests : IDisposable
         {
             Directory.Delete(_contentRoot, true);
         }
+
+        if (_outside is not null && Directory.Exists(_outside))
+        {
+            Directory.Delete(_outside, true);
+        }
     }
 
     private sealed class TestDirectorySanitiser(string path) : DirectorySanitiser
@@ -90,6 +95,96 @@ public sealed class DirectorySanitiserTests : IDisposable
     {
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => new TestDirectorySanitiser(Path.Combine("media", "..", "..")).Sanitise(Context(dryRun: false)));
+    }
+
+    // A directory outside the content root holding a file that must never be deleted.
+    private string CreateOutsideDirectory()
+    {
+        var outside = Path.Combine(Path.GetTempPath(), "sanitiser-outside-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(outside, "uploads"));
+        File.WriteAllText(Path.Combine(outside, "uploads", "keep.txt"), "not ours");
+        _outside = outside;
+        return outside;
+    }
+
+    private string? _outside;
+
+    // Symlink creation can need elevated rights (e.g. on Windows); skip the assertion rather than fail there.
+    private static bool TryCreateDirectoryLink(string link, string target)
+    {
+        try
+        {
+            Directory.CreateSymbolicLink(link, target);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    [Fact]
+    public async Task Refuses_a_symlinked_target()
+    {
+        var outside = CreateOutsideDirectory();
+        var link = Path.Combine(_contentRoot, "media", "linked");
+        if (!TryCreateDirectoryLink(link, Path.Combine(outside, "uploads")))
+        {
+            return;
+        }
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(link).Sanitise(Context(dryRun: false)));
+
+        Assert.True(File.Exists(Path.Combine(outside, "uploads", "keep.txt")));
+    }
+
+    [Fact]
+    public async Task Refuses_a_target_reached_through_a_symlinked_parent_folder()
+    {
+        var outside = CreateOutsideDirectory();
+        var linkedParent = Path.Combine(_contentRoot, "media", "linkedparent");
+        if (!TryCreateDirectoryLink(linkedParent, outside))
+        {
+            return;
+        }
+
+        // Lexically inside the content root, but 'linkedparent' resolves to the outside directory.
+        var target = Path.Combine(linkedParent, "uploads");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(target).Sanitise(Context(dryRun: false)));
+
+        Assert.True(File.Exists(Path.Combine(outside, "uploads", "keep.txt")));
+    }
+
+    [Fact]
+    public async Task Refuses_a_symlinked_parent_folder_in_dry_run_too()
+    {
+        var outside = CreateOutsideDirectory();
+        var linkedParent = Path.Combine(_contentRoot, "media", "linkedparent");
+        if (!TryCreateDirectoryLink(linkedParent, outside))
+        {
+            return;
+        }
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => new TestDirectorySanitiser(Path.Combine(linkedParent, "uploads")).Sanitise(Context(dryRun: true)));
+    }
+
+    [Fact]
+    public async Task Removes_a_symlink_inside_the_target_without_touching_what_it_points_to()
+    {
+        var outside = CreateOutsideDirectory();
+        if (!TryCreateDirectoryLink(Path.Combine(_dir, "childlink"), Path.Combine(outside, "uploads")))
+        {
+            return;
+        }
+
+        await new TestDirectorySanitiser(_dir).Sanitise(Context(dryRun: false));
+
+        Assert.Empty(Directory.GetFileSystemEntries(_dir));
+        Assert.True(File.Exists(Path.Combine(outside, "uploads", "keep.txt")));
     }
 }
 

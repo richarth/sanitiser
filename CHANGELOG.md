@@ -45,7 +45,8 @@ AI-based).
   scrubbed" for the boundaries (e.g. credentials are not reset by `Anonymise`).
 - **`DirectorySanitiser` safety guard.** The target directory must resolve to a location strictly inside the
   site content root; an empty path, the content root itself, or a path outside the site (including via `..`)
-  now throws instead of deleting anything.
+  now throws instead of deleting anything. It also refuses a target that is a symlink, or that is reached
+  through a symlinked folder below the content root, since either could resolve outside the site.
 - **Cancellation and AI timeout.** The host's cancellation token now flows from the startup handler through
   the service, `SanitisationContext`, sanitisers and `IPersonalDataReplacer`, so a long run is cancelled on
   shutdown. The AI replacer additionally bounds each call with `AiReplacement:TimeoutSeconds` (default 30) and
@@ -58,6 +59,11 @@ AI-based).
   so the built-in user/member sanitisers, the `DatabaseTableSanitiser`/`DirectorySanitiser` base classes, and
   custom sanitisers all honour it. Because it is read-only it is also permitted to run in Production for a safe
   preview.
+- **Failure reporting and `FailOnError`.** If any sanitiser fails, the run now ends with a single error naming
+  the failed sanitisers and warning that personal data may remain (it no longer logs "Sanitization finished"
+  as if all was well). An opt-in `Sanitiser:FailOnError` option goes further and stops startup once every
+  sanitiser has run, so a site can never boot with data left behind by a failed run. It defaults to `false`,
+  and the test sites enable it so the e2e smoke test fails if a sanitiser fails.
 - **Pluggable replacement.** A new `IPersonalDataReplacer` abstraction generates replacement values.
   The default `TemplatePersonalDataReplacer` is driven by the new `Sanitiser:Replacement` config section.
   Register a custom replacer with `builder.SetPersonalDataReplacer<T>()`.
@@ -109,8 +115,8 @@ AI-based).
   Production and Umbraco persists Information-level logs to disk, so this had written real personal data into
   the very log files the package exists to keep clean; it now logs only the record id.
 - Hardening: the template replacer warns at startup if the email/username template omits `{index}` (which
-  would generate colliding values); `DirectorySanitiser` refuses a symlinked target and honours cancellation
-  while deleting; and the Super Admin exclusion uses `Constants.Security.SuperUserId` rather than a literal.
+  would generate colliding values); `DirectorySanitiser` refuses a symlinked target or symlinked parent
+  folder and honours cancellation while deleting; and the Super Admin exclusion uses `Constants.Security.SuperUserId` rather than a literal.
 
 ### Migration notes
 

@@ -40,6 +40,7 @@ public class SanitizationService(
             logger.LogInformation("Sanitization started.");
 
             var ranAnySanitiser = false;
+            var failedSanitisers = new List<string>();
 
             foreach (ISanitiser sanitiser in sanitisers)
             {
@@ -64,6 +65,7 @@ public class SanitizationService(
                     catch (Exception ex)
                     {
                         logger.LogError(ex, "Error running sanitiser: {sanitiserName}", sanitiserName);
+                        failedSanitisers.Add(sanitiserName);
                     }
                 }
             }
@@ -82,7 +84,25 @@ public class SanitizationService(
                 }
             }
 
-            logger.LogInformation("Sanitization finished.");
+            if (failedSanitisers.Count > 0)
+            {
+                var failed = string.Join(", ", failedSanitisers);
+
+                // A failed sanitiser means personal data may remain, so surface it once more, plainly, after the run.
+                logger.LogError(
+                    "Sanitization finished with {failedCount} failed sanitiser(s): {failedSanitisers}. Personal data may remain.",
+                    failedSanitisers.Count, failed);
+
+                if (_options.FailOnError)
+                {
+                    throw new InvalidOperationException(
+                        $"Sanitisation failed for: {failed}. Stopping startup because Sanitiser:FailOnError is enabled.");
+                }
+            }
+            else
+            {
+                logger.LogInformation("Sanitization finished.");
+            }
         }
     }
 
